@@ -1,11 +1,22 @@
-import { useState } from 'react'
+
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import { useState, useEffect } from 'react';
+
+import API_BASE_URL from '../config';
+
 
 function App() {
   const [count, setCount] = useState(0)
+  const [test, setTest] = useState('');
 
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/hello`).then(res => res.json()).then(data => {
+      setTest(data.hi);
+      console.log(data);
+    });
+  }, []);
   return (
     <>
       <div>
@@ -24,6 +35,7 @@ function App() {
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
+        <p>{test}</p>
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more

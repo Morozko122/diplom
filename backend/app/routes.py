@@ -6,7 +6,11 @@ from flask_security import auth_required, permissions_accepted, current_user
 
 @app.route("/hello")
 def hell():
-    return 'Hello 123!'
+     return {'hi': 'Hello 1223!'}
+ 
+@app.route("/api/hello")
+def hell2():
+     return {'hi': 'Hello API!'}
 @app.route("/")
 @auth_required()
 def home():
