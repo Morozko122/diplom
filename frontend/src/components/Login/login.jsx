@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../../config';
-import { redirect  } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const login = async (username, password) => {
   try {
@@ -21,13 +21,17 @@ const login = async (username, password) => {
 function Login() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate();
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
       login(userName, password)
           .then(token => {
               localStorage.setItem('accessToken', token); //Cохранение токена доступа
+              navigate('/main/3234');
           }
           )
           .catch(error => {
@@ -37,7 +41,7 @@ function Login() {
     } catch (error) {
       console.error(error);
     }
-    redirect('/main');
+    
   };
 
   useEffect(() => {
@@ -53,7 +57,7 @@ function Login() {
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button type="submit">Войти</button>
       </form>
-      
+   
     </div>
     
   );
