@@ -15,6 +15,7 @@ import Sidebar from '../Sidebar/Sidebar';
 import OrderList from '../OrderList/OrderList';
 import OrderTable from '../OrderTable/OrderTable';
 import Header from '../Header/Header';
+import { Outlet } from "react-router-dom";
 
 export default function JoyOrderDashboardTemplate() {
   return (
@@ -42,23 +43,8 @@ export default function JoyOrderDashboardTemplate() {
             gap: 1,
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              mb: 1,
-              gap: 1,
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'start', sm: 'center' },
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Typography level="h2" component="h1">
-              Заказы
-            </Typography>
-            
-          </Box>
-          <OrderTable />
+          <Outlet/>
+          
           
         </Box>
       </Box>

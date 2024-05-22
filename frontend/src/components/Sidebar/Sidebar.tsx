@@ -18,6 +18,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import ColorSchemeToggle from '../ColorScheme/ColorSchemeToggle';
 import { closeSidebar } from '../../utils';
+import { Link } from 'react-router-dom';
 
 function Toggler({
   defaultExpanded = false,
@@ -105,10 +106,12 @@ export default function Sidebar() {
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Link to="/main">
         <IconButton variant="soft" color="primary" size="sm">
           <BrightnessAutoRoundedIcon />
         </IconButton>
-        <Typography level="title-lg">Контора пидорасов</Typography>
+        </Link>
+        <Typography level="title-lg">ТИУ</Typography>
         <ColorSchemeToggle sx={{ ml: 'auto' }} />
       </Box>
       
@@ -137,7 +140,9 @@ export default function Sidebar() {
             <ListItemButton selected>
               <AssignmentRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Orders</Typography>
+              <Link to="/main">
+                <Typography level="title-sm">Заказы</Typography>
+                </Link>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
@@ -148,7 +153,7 @@ export default function Sidebar() {
                 <ListItemButton onClick={() => setOpen(!open)}>
                   <GroupRoundedIcon />
                   <ListItemContent>
-                    <Typography level="title-sm">Users</Typography>
+                    <Typography level="title-sm">Администрирование</Typography>
                   </ListItemContent>
                   <KeyboardArrowDownIcon
                     sx={{ transform: open ? 'rotate(180deg)' : 'none' }}
@@ -159,10 +164,15 @@ export default function Sidebar() {
               <List sx={{ gap: 0.5 }}>
            
                 <ListItem>
-                  <ListItemButton>Create a new user</ListItemButton>
+                <Link to="/main/users">
+                <Typography level="title-sm">Пользователи</Typography>
+                </Link>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton>Roles & permission</ListItemButton>
+                <Link to="/main/roles">
+                <Typography level="title-sm">Роли</Typography>
+                </Link>
+                 
                 </ListItem>
               </List>
             </Toggler>

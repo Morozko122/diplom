@@ -94,7 +94,7 @@ function RowMenu() {
   );
 }
 
-export default function OrderTable() {
+export default function RoleTable() {
   const [order, setOrder] = React.useState<Order>('desc');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [open, setOpen] = React.useState(false);
@@ -103,7 +103,7 @@ export default function OrderTable() {
  
   const fetchSpravki = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`);
+      const response = await axios.get(`http://localhost:5000/roles`);
       setRow(response.data);
     } catch (error) {
       console.error('Error fetching spravki:', error);
@@ -155,6 +155,7 @@ export default function OrderTable() {
   );
   return (
     <React.Fragment>
+      
       <Box
             sx={{
               display: 'flex',
@@ -167,11 +168,10 @@ export default function OrderTable() {
             }}
           >
             <Typography level="h2" component="h1">
-              Заказы
+              Роли
             </Typography>
             
           </Box>
-      
       <Box
         className="SearchAndFilters-tabletUp"
         sx={{
@@ -250,14 +250,11 @@ export default function OrderTable() {
                     },
                   }}
                 >
-                  Личный номер
+                  Id
                 </Link>
               </th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Дата</th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Наименование</th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Кол-во</th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Статус</th>
-              <th style={{ width: 240, padding: '12px 6px' }}>ФИО студента</th>
+              <th style={{ width: 140, padding: '12px 6px' }}>Название</th>
+              <th style={{ width: 140, padding: '12px 6px' }}>Описание</th>
               <th style={{ width: 140, padding: '12px 6px' }}> </th>
             </tr>
           </thead>
@@ -284,39 +281,12 @@ export default function OrderTable() {
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
                 <td>
-                  <Typography level="body-xs">{row.date}</Typography>
-                </td>
-                <td>
                   <Typography level="body-xs">{row.name}</Typography>
                 </td>
                 <td>
-                  <Typography level="body-xs">{row.quantity}</Typography>
+                  <Typography level="body-xs">{row.description}</Typography>
                 </td>
-                <td>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        Paid: <CheckRoundedIcon />,
-                        "В работе": <AutorenewRoundedIcon />,
-                        Cancelled: <BlockIcon />,
-                      }[row.status]
-                    }
-                    color={
-                      {
-                        Paid: 'success',
-                        "В работе": 'neutral',
-                        Cancelled: 'danger',
-                      }[row.status] as ColorPaletteProp
-                    }
-                  >
-                    {row.status}
-                  </Chip>
-                </td>
-                <td>
-                  <Typography level="body-xs">{"ФИО"}</Typography>
-                </td>
+               
                 <td>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     

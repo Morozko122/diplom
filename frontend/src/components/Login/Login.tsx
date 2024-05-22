@@ -69,7 +69,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-export default function JoySignInSideTemplate() {
+export default function SignIn() {
   const navigate = useNavigate();
   return (
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange>
