@@ -3,22 +3,11 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask import jsonify, render_template
 from flask import render_template_string
-from flask_security import auth_required, permissions_accepted, current_user
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt
+from flask_security import auth_required, permissions_accepted, current_user, hash_password
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies
 from app.decorator import roles_required 
 from app.database import db_session
-from app.models import Application, Methodologist, User, Role
-
-@app.route("/hello", methods=["GET"])
-def hell():
-     return {'hi': 'Hello 1223!'}
- 
-# @app.route("/user")
-# @auth_required()
-# @permissions_accepted("user-read")
-# def user_home():
-#     return render_template_string("Hello {{ current_user.email }} you are a user!")
-
+from app.models import Application, Methodologist, User, Role, Student, Group
 
 jwt = JWTManager(app)
 
@@ -32,32 +21,25 @@ def login():
   
    if user and user.password == password:
        access_token = create_access_token(identity=user.username,  additional_claims={"role": user.roles[0].name})
-       return jsonify(access_token=access_token), 200
+       return jsonify(access_token=access_token, user_role=user.roles[0].name), 200
    else:
        return jsonify({"msg": "Invalid username or password"}), 401
 
+@app.route("/logout", methods=["POST"])
+def logout():
+    response = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(response)
+    return response
+
 
 @app.route('/admin1', methods=['GET'])
-@roles_required(*['admins2', 'adddmin'])
+@roles_required(*['admin', 'adddmin'])
 def admin_only():
    current_user = get_jwt_identity()
    print(current_user)
    claims = get_jwt()
   
    return jsonify({'message': f'This is an admin-only endpoint. Hello, {claims["role"]}!'})
-
-# @app.route('/add_spravka', methods=['POST'])
-# def add_spravka():
-#     data = request.json
-#     new_spravka = Spravka(
-#         student_code=data['student_code'],
-#         spravka_name=data['spravka_name'],
-#         spravka_count=data['spravka_count'],
-#         status='Pending'  # default status
-#     )
-#     db_session.add(new_spravka)
-#     db_session.commit()
-#     return jsonify({"message": "Spravka added successfully"}), 201
 
 @app.route('/get_spravka/<int:student_code>', methods=['GET'])
 def get_spravka(student_code):
@@ -99,9 +81,9 @@ def add_application():
     return jsonify({"message": "Application added successfully"}), 201
 
 @app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
+@jwt_required()
 def get_applications_for_methodologist(methodologist_id):
     methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
-    print(methodologist[0].groups)
     applications = []
     for group in methodologist[0].groups:
        
@@ -137,10 +119,11 @@ def add_role():
     data = request.json
     new_role = Role(
         name=data['name'],
-        description=data.get('description', ''),
-        permissions=data.get('permissions', [])
+        description=data.get('description', '')
     )
-    db_session.add(new_role)
+    app.security.datastore.find_or_create_role(
+        name=new_role.name, permissions={"123"}
+    )
     db_session.commit()
     return jsonify({"message": "Role added", "role": new_role.name})
 
@@ -185,19 +168,95 @@ def get_users_id(user_id):
     ]
     return jsonify(users_list)
 
+# @app.route('/users', methods=['POST'])
+# def add_user():
+#     data = request.json
+#     role_name = data.get('role')
+#     print(role_name)
+
+#     # Validate role
+#     role = Role.query.filter_by(name=role_name).first()
+#     if not role:
+#         return jsonify({"error": "Invalid role"}), 400
+
+#     new_user = User(
+#         email=data['email'],
+#         username=data.get('username', ''),
+#         password=hash_password(data['password']),
+#         active=data.get('active', True),
+#         fs_uniquifier=data['fs_uniquifier']
+#     )
+
+#     if not app.security.datastore.find_user(email=new_user.email):
+#         app.security.datastore.create_user(email=new_user.email,
+#                                    password=hash_password(new_user.password),
+#                                    roles=[role])
+        
+#         db_session.commit()
+#         return jsonify({"message": "User added", "user": new_user.email})
+
+#     return jsonify({"error": "User already exists"}), 400
+
 @app.route('/users', methods=['POST'])
 def add_user():
     data = request.json
+    role_name = data.get('role')
+    print(role_name)
+
+    # Validate role
+    role = Role.query.filter_by(name=role_name).first()
+    if not role:
+        return jsonify({"error": "Invalid role"}), 400
+
+    # Check if user already exists
+    existing_user = app.security.datastore.find_user(email=data['email'])
+    if existing_user:
+        return jsonify({"error": "User already exists"}), 400
+
+    # Create new User
     new_user = User(
         email=data['email'],
         username=data.get('username', ''),
-        password=data['password'],
+        password=hash_password(data['password']),
         active=data.get('active', True),
         fs_uniquifier=data['fs_uniquifier']
     )
-    db_session.add(new_user)
+
+    # Add user to database
+    app.security.datastore.create_user(
+        email=new_user.email,
+        password=new_user.password,
+        roles=[role]
+    )
     db_session.commit()
-    return jsonify({"message": "User added", "user": new_user.email})
+
+    # Add specific role-based entity
+    if role_name == 'student':
+        group_name = data.get('group_name')
+        group = Group.query.filter_by(name=group_name).first()
+        if not group:
+            return jsonify({"error": "Invalid group name"}), 400
+
+        new_student = Student(user_id=new_user.id, group_id=group.id)
+        db_session.add(new_student)
+    elif role_name == 'methodologist':
+        new_methodologist = Methodologist(user_id=new_user.id, full_name='pohui')
+        db_session.add(new_methodologist)
+
+    # Commit all changes to the database
+    db_session.commit()
+
+    return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
+
+# Error handling
+@app.errorhandler(400)
+def bad_request(error):
+    response = jsonify({"error": "Bad request", "message": str(error)})
+    response.status_code = 400
+    return response
+
+
+
 
 @app.route('/users/<int:user_id>', methods=['PUT'])
 def edit_user(user_id):

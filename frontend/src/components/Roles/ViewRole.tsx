@@ -1,78 +1,32 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import * as React from 'react';
-import { ColorPaletteProp } from '@mui/joy/styles';
-import Avatar from '@mui/joy/Avatar';
-import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Chip from '@mui/joy/Chip';
-import Divider from '@mui/joy/Divider';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import Link from '@mui/joy/Link';
-import Select from '@mui/joy/Select';
-import Option from '@mui/joy/Option';
-import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
-import Checkbox from '@mui/joy/Checkbox';
-import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
-import Typography from '@mui/joy/Typography';
+import { useState } from 'react';
+import {
+    Box,
+    Button,
+    Table,
+    Typography,
+    FormControl,
+    FormLabel,
+    Select,
+    Option,
+    Sheet,
+    Modal,
+    Input,
+    ModalDialog,
+    ModalClose,
+    Checkbox
+} from '@mui/joy';
+import axios from 'axios';
+import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Menu from '@mui/joy/Menu';
+import Dropdown from '@mui/joy/Dropdown';
 import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import BlockIcon from '@mui/icons-material/Block';
-import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import axios from 'axios';
-
-
-
-
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = 'asc' | 'desc';
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key,
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
-
-function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+import Divider from '@mui/joy/Divider';
+import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 
 function RowMenu() {
   return (
@@ -95,23 +49,43 @@ function RowMenu() {
 }
 
 export default function RoleTable() {
-  const [order, setOrder] = React.useState<Order>('desc');
-  const [selected, setSelected] = React.useState<readonly string[]>([]);
-  const [open, setOpen] = React.useState(false);
-  const [rows, setRow] = React.useState([]);
-  console.log(rows);
- 
-  const fetchSpravki = async (id) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/roles`);
-      setRow(response.data);
-    } catch (error) {
-      console.error('Error fetching spravki:', error);
-      setRow([]);
-    }
+  const [rows, setRow] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+      name: '',
+      permissions: '',
+  });
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleSubmit = async () => {
+      try {
+          const response = await axios.post('http://localhost:5000/roles', formData);
+          console.log(response.data);
+          fetchRoles();
+          handleClose();
+      } catch (error) {
+          console.error('Error adding user:', error);
+      }
+  };
+
+  const fetchRoles = async () => {
+      try {
+          const response = await axios.get('http://localhost:5000/roles');
+          setRow(response.data);
+      } catch (error) {
+          console.error('Error fetching spravki:', error);
+          setRow([]);
+      }
+  };
+
   React.useEffect(() => {
-    fetchSpravki(1);
+    fetchRoles(1);
   }, []);
 
 
@@ -170,7 +144,9 @@ export default function RoleTable() {
             <Typography level="h2" component="h1">
               Роли
             </Typography>
-            
+            <Button variant="solid" color="primary" onClick={handleOpen}>
+                    Создать роль
+                </Button>
           </Box>
       <Box
         className="SearchAndFilters-tabletUp"
@@ -214,69 +190,16 @@ export default function RoleTable() {
         >
           <thead>
             <tr>
-              <th style={{ width: 48, textAlign: 'center', padding: '12px 6px' }}>
-                <Checkbox
-                  size="sm"
-                  indeterminate={
-                    selected.length > 0 && selected.length !== rows.length
-                  }
-                  checked={selected.length === rows.length}
-                  onChange={(event) => {
-                    setSelected(
-                      event.target.checked ? rows.map((row) => row.id) : [],
-                    );
-                  }}
-                  color={
-                    selected.length > 0 || selected.length === rows.length
-                      ? 'primary'
-                      : undefined
-                  }
-                  sx={{ verticalAlign: 'text-bottom' }}
-                />
-              </th>
-              <th style={{ width: 120, padding: '12px 6px' }}>
-                <Link
-                  underline="none"
-                  color="primary"
-                  component="button"
-                  onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-                  fontWeight="lg"
-                  endDecorator={<ArrowDropDownIcon />}
-                  sx={{
-                    '& svg': {
-                      transition: '0.2s',
-                      transform:
-                        order === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
-                    },
-                  }}
-                >
-                  Id
-                </Link>
-              </th>
+              {/* <th style={{ width: 48, textAlign: 'center', padding: '12px 6px' }}>              </th> */}
+              <th style={{ width: 120, padding: '12px 6px' }}>Id</th>
               <th style={{ width: 140, padding: '12px 6px' }}>Название</th>
-              <th style={{ width: 140, padding: '12px 6px' }}>Описание</th>
+              <th style={{ width: 140, padding: '12px 6px' }}>Права</th>
               <th style={{ width: 140, padding: '12px 6px' }}> </th>
             </tr>
           </thead>
           <tbody>
-            {stableSort(rows, getComparator(order, 'id')).map((row) => (
+            {rows.map((row) => (
               <tr key={row.id}>
-                <td style={{ textAlign: 'center', width: 120 }}>
-                  <Checkbox
-                    size="sm"
-                    checked={selected.includes(row.id)}
-                    color={selected.includes(row.id) ? 'primary' : undefined}
-                    onChange={(event) => {
-                      setSelected((ids) =>
-                        event.target.checked
-                          ? ids.concat(row.id)
-                          : ids.filter((itemId) => itemId !== row.id),
-                      );
-                    }}
-                    slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
-                    sx={{ verticalAlign: 'text-bottom' }}
-                  />
-                </td>
                 <td>
                   <Typography level="body-xs">{row.id}</Typography>
                 </td>
@@ -284,7 +207,7 @@ export default function RoleTable() {
                   <Typography level="body-xs">{row.name}</Typography>
                 </td>
                 <td>
-                  <Typography level="body-xs">{row.description}</Typography>
+                  <Typography level="body-xs">{row.permissions}</Typography>
                 </td>
                
                 <td>
@@ -341,6 +264,57 @@ export default function RoleTable() {
           Next
         </Button>
       </Box>
+      <Modal open={open} onClose={handleClose}>
+                <ModalDialog
+                    aria-labelledby="add-user-modal"
+                    aria-describedby="add-user-modal-description"
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: '8px'
+                    }}
+                >
+                    <ModalClose onClick={handleClose} />
+                    <Typography id="add-user-modal" level="h6" component="h2">
+                        Создать новую роль
+                    </Typography>
+                    <Box component="form" sx={{ mt: 1 }}>
+                        <FormControl fullWidth>
+                            <FormLabel>Название роли</FormLabel>
+                            <Input
+                                type="text"
+                                name="name"
+                                onChange={handleChange}
+                                required
+                            />
+                        </FormControl>
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <FormLabel>Разрешения</FormLabel>
+                            <Input
+                                type="text"
+                                name="permissions"
+                                onChange={handleChange}
+                                required
+                            />
+                        </FormControl>
+                        <Button
+                            fullWidth
+                            variant="solid"
+                            color="primary"
+                            onClick={handleSubmit}
+                            sx={{ mt: 2 }}
+                        >
+                            Сохранить
+                        </Button>
+                    </Box>
+                </ModalDialog>
+            </Modal>
     </React.Fragment>
   );
 }

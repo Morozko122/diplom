@@ -52,7 +52,7 @@ function Toggler({
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({role}) {
   return (
     <Sheet
       className="Sidebar"
@@ -107,14 +107,14 @@ export default function Sidebar() {
       />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Link to="/main">
-        <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoRoundedIcon />
-        </IconButton>
+          <IconButton variant="soft" color="primary" size="sm">
+            <BrightnessAutoRoundedIcon />
+          </IconButton>
         </Link>
         <Typography level="title-lg">ТИУ</Typography>
         <ColorSchemeToggle sx={{ ml: 'auto' }} />
       </Box>
-      
+
       <Box
         sx={{
           minHeight: 0,
@@ -140,43 +140,44 @@ export default function Sidebar() {
             <ListItemButton selected>
               <AssignmentRoundedIcon />
               <ListItemContent>
-              <Link to="/main">
-                <Typography level="title-sm">Заказы</Typography>
+                <Link to="/main">
+                  <Typography level="title-sm">Заказы</Typography>
                 </Link>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
+          {role === 'admin' && (
+            <ListItem nested>
+              <Toggler
+                renderToggle={({ open, setOpen }) => (
+                  <ListItemButton onClick={() => setOpen(!open)}>
+                    <GroupRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="title-sm">Администрирование</Typography>
+                    </ListItemContent>
+                    <KeyboardArrowDownIcon
+                      sx={{ transform: open ? 'rotate(180deg)' : 'none' }}
+                    />
+                  </ListItemButton>
+                )}
+              >
+                <List sx={{ gap: 0.5 }}>
 
-          <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <GroupRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Администрирование</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={{ transform: open ? 'rotate(180deg)' : 'none' }}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-           
-                <ListItem>
-                <Link to="/main/users">
-                <Typography level="title-sm">Пользователи</Typography>
-                </Link>
-                </ListItem>
-                <ListItem>
-                <Link to="/main/roles">
-                <Typography level="title-sm">Роли</Typography>
-                </Link>
-                 
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
+                  <ListItem>
+                    <Link to="/main/users">
+                      <Typography level="title-sm">Пользователи</Typography>
+                    </Link>
+                  </ListItem>
+                  <ListItem>
+                    <Link to="/main/roles">
+                      <Typography level="title-sm">Роли</Typography>
+                    </Link>
+
+                  </ListItem>
+                </List>
+              </Toggler>
+            </ListItem>
+          )}
         </List>
 
         <List
@@ -189,9 +190,9 @@ export default function Sidebar() {
             mb: 2,
           }}
         >
-         
+
         </List>
-       
+
       </Box>
       <Divider />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

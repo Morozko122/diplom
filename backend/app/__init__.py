@@ -30,8 +30,8 @@ with app.app_context():
         name="admin", permissions={"admin-read", "admin-write"}
     )
     db_session.commit()
-    if not app.security.datastore.find_user(email="test23@me.com"):
-        app.security.datastore.create_user(email="test23@me.com",
+    if not app.security.datastore.find_user(email="xeui@cm.cd"):
+        app.security.datastore.create_user(email="xeui@cm.cd",
         password=hash_password("password"), roles=["admin"])
     db_session.commit()
     

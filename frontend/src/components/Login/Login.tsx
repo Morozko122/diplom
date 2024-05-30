@@ -35,8 +35,8 @@ const login = async (username, password) => {
       username,
       password
     });
-    const { access_token } = response.data;
-    return access_token;
+    // const { access_token, user_role } = response.data;
+    return response.data;
   } catch (error) {
     console.error('Error logging:', error);
     throw error;
@@ -69,7 +69,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-export default function SignIn() {
+export default function SignIn({setToken, setRole}) {
   const navigate = useNavigate();
   return (
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange>
@@ -170,8 +170,10 @@ export default function SignIn() {
                   };
                   try {
                     login(data.username, data.password)
-                        .then(token => {
-                            localStorage.setItem('accessToken', token); //Cохранение токена доступа
+                        .then(data => {
+                            // localStorage.setItem('accessToken', token); //Cохранение токена доступа
+                            setToken(data);
+                            setRole(data);
                             navigate('/main');
                         }
                         )
