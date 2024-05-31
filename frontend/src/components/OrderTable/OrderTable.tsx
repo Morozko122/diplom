@@ -386,10 +386,12 @@ import Select from '@mui/joy/Select';
 import Sheet from '@mui/joy/Sheet';
 import Typography from '@mui/joy/Typography';
 import TableComponent from '../Table/TableComponent';
+import useToken from '../useToken/useToken';
 
 export default function OrderTable({token}) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [rows, setRow] = React.useState([]);
+  const userId = localStorage.getItem('user_id');
   const fetchSpravki = async (id) => {
     try {
       const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`, {headers: 
@@ -405,7 +407,7 @@ export default function OrderTable({token}) {
   };
 
   React.useEffect(() => {
-    fetchSpravki(1);
+    fetchSpravki(userId);
   }, []);
 
   const renderFilters = () => (

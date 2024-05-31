@@ -21,15 +21,15 @@ def login():
   
    if user and verify_password(password, user.password):
        access_token = create_access_token(identity=user.username,  additional_claims={"role": user.roles[0].name})
-       return jsonify(access_token=access_token, user_role=user.roles[0].name), 200
+       return jsonify(access_token=access_token, user_role=user.roles[0].name, user_id=user.id), 200
    else:
        return jsonify({"msg": "Invalid username or password"}), 401
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    response = jsonify({"msg": "logout successful"})
-    unset_jwt_cookies(response)
-    return response
+    resp = jsonify({'logout': True})
+    unset_jwt_cookies(resp)
+    return resp, 200
 
 
 @app.route('/admin1', methods=['GET'])
@@ -95,7 +95,8 @@ def get_applications_for_methodologist(methodologist_id):
                     "name": application.name,
                     "quantity": application.quantity,
                     "status": application.status,
-                    "date": application.date.strftime('%Y-%m-%d %H:%M:%S')
+                    "date": application.date.strftime('%Y-%m-%d %H:%M:%S'),
+                    "full_name": student.user.username
                 })
 
     return jsonify(applications)
@@ -168,88 +169,54 @@ def get_users_id(user_id):
     ]
     return jsonify(users_list)
 
-# @app.route('/users', methods=['POST'])
-# def add_user():
-#     data = request.json
-#     role_name = data.get('role')
-#     print(role_name)
-
-#     # Validate role
-#     role = Role.query.filter_by(name=role_name).first()
-#     if not role:
-#         return jsonify({"error": "Invalid role"}), 400
-
-#     new_user = User(
-#         email=data['email'],
-#         username=data.get('username', ''),
-#         password=hash_password(data['password']),
-#         active=data.get('active', True),
-#         fs_uniquifier=data['fs_uniquifier']
-#     )
-
-#     if not app.security.datastore.find_user(email=new_user.email):
-#         app.security.datastore.create_user(email=new_user.email,
-#                                    password=hash_password(new_user.password),
-#                                    roles=[role])
-        
-#         db_session.commit()
-#         return jsonify({"message": "User added", "user": new_user.email})
-
-#     return jsonify({"error": "User already exists"}), 400
-
 @app.route('/users', methods=['POST'])
 def add_user():
     data = request.json
     role_name = data.get('role')
-    print(role_name)
 
-    # Validate role
     role = Role.query.filter_by(name=role_name).first()
     if not role:
         return jsonify({"error": "Invalid role"}), 400
 
-    # Check if user already exists
     existing_user = app.security.datastore.find_user(email=data['email'])
     if existing_user:
         return jsonify({"error": "User already exists"}), 400
 
-    # Create new User
     new_user = User(
         email=data['email'],
-        username=data.get('username', ''),
+        username=data['username'],
         password=hash_password(data['password']),
         active=data.get('active', True),
     )
 
-    # Add user to database
     app.security.datastore.create_user(
         email=new_user.email,
         password=new_user.password,
-        roles=[role]
+        roles=[role],
+        username = new_user.username
     )
     db_session.commit()
 
-    # Add specific role-based entity
     if role_name == 'student':
         group_name = data.get('group_name')
         group = Group.query.filter_by(name=group_name).first()
+        query_id_select = app.security.datastore.find_user(email=new_user.email)
+        #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
         if not group:
             return jsonify({"error": "Invalid group name"}), 400
 
-        new_student = Student(user_id=new_user.id, group_id=group.id)
+        new_student = Student(user_id=query_id_select.id, group_id=group.id)
         db_session.add(new_student)
     elif role_name == 'methodologist':
-        query_id_select = User.query.filter_by(email=new_user.email).first()
-        print(query_id_select)
+        #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
+        query_id_select = app.security.datastore.find_user(email=new_user.email)
         new_methodologist = Methodologist(id=query_id_select.id, full_name='pohui')
         db_session.add(new_methodologist)
 
-    # Commit all changes to the database
     db_session.commit()
 
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
 
-# Error handling
 @app.errorhandler(400)
 def bad_request(error):
     response = jsonify({"error": "Bad request", "message": str(error)})

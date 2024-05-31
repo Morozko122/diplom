@@ -106,7 +106,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
               </Chip>
             </td>
             <td>
-              <Typography level="body-xs">{"ФИО"}</Typography>
+              <Typography level="body-xs">{row.full_name}</Typography>
             </td>
           </tr>
         ))}
