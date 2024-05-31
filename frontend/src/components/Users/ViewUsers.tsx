@@ -822,7 +822,6 @@ export default function UserTable() {
                             type="submit"
                             variant="solid"
                             color="primary"
-
                             sx={{ mt: 2 }}
                         >
                             Сохранить

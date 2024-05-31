@@ -219,7 +219,6 @@ def add_user():
         username=data.get('username', ''),
         password=hash_password(data['password']),
         active=data.get('active', True),
-        
     )
 
     # Add user to database

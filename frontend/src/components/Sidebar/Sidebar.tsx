@@ -163,17 +163,17 @@ export default function Sidebar({role}) {
               >
                 <List sx={{ gap: 0.5 }}>
 
-                  <ListItem>
+                  <ListItemButton>
                     <Link to="/main/users">
                       <Typography level="title-sm">Пользователи</Typography>
                     </Link>
-                  </ListItem>
-                  <ListItem>
+                  </ListItemButton>
+                  <ListItemButton>
                     <Link to="/main/roles">
                       <Typography level="title-sm">Роли</Typography>
                     </Link>
 
-                  </ListItem>
+                  </ListItemButton>
                 </List>
               </Toggler>
             </ListItem>
