@@ -19,6 +19,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ColorSchemeToggle from '../ColorScheme/ColorSchemeToggle';
 import { closeSidebar } from '../../utils';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
 
 function Toggler({
   defaultExpanded = false,
@@ -51,8 +53,18 @@ function Toggler({
     </React.Fragment>
   );
 }
-
-export default function Sidebar({role}) {
+// const logout = async () => {
+//   try {
+//     const response = await axios.post(`http://localhost:5000/logout`, {headers: 
+//     {
+//       'Authorization': `Bearer ${token}`, 
+//       'Content-Type': `application/json`
+//     }});
+//   } catch (error) {
+//     console.error('Error fetching spravki:', error);
+//   }
+// };
+export default function Sidebar({ role, removeToken }) {
   return (
     <Sheet
       className="Sidebar"
@@ -139,11 +151,13 @@ export default function Sidebar({role}) {
           <ListItem>
             <ListItemButton selected>
               <AssignmentRoundedIcon />
+              <Link to="/main">
               <ListItemContent>
-                <Link to="/main">
+                
                   <Typography level="title-sm">Заказы</Typography>
-                </Link>
+                
               </ListItemContent>
+              </Link>
             </ListItemButton>
           </ListItem>
           {role === 'admin' && (
@@ -162,18 +176,20 @@ export default function Sidebar({role}) {
                 )}
               >
                 <List sx={{ gap: 0.5 }}>
-
-                  <ListItemButton>
-                    <Link to="/main/users">
-                      <Typography level="title-sm">Пользователи</Typography>
-                    </Link>
-                  </ListItemButton>
-                  <ListItemButton>
-                    <Link to="/main/roles">
-                      <Typography level="title-sm">Роли</Typography>
-                    </Link>
-
-                  </ListItemButton>
+                  <Link to="/main/users">
+                    <ListItemButton>
+                      <ListItemContent>
+                        <Typography level="title-sm">Пользователи</Typography>
+                      </ListItemContent>
+                    </ListItemButton>
+                  </Link>
+                  <Link to="/main/roles">
+                    <ListItemButton>
+                      <ListItemContent>
+                        <Typography level="title-sm">Роли</Typography>
+                      </ListItemContent>
+                    </ListItemButton>
+                  </Link>
                 </List>
               </Toggler>
             </ListItem>
@@ -205,7 +221,7 @@ export default function Sidebar({role}) {
           <Typography level="title-sm">Siriwat K.</Typography>
           <Typography level="body-xs">siriwatk@test.com</Typography>
         </Box>
-        <IconButton size="sm" variant="plain" color="neutral">
+        <IconButton size="sm" variant="plain" color="neutral" onClick={() => removeToken()}>
           <LogoutRoundedIcon />
         </IconButton>
       </Box>

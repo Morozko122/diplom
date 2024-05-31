@@ -69,7 +69,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-export default function SignIn({setToken, setRole}) {
+export default function SignIn({setToken, setRole, setId}) {
   const navigate = useNavigate();
   return (
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange>
@@ -171,9 +171,9 @@ export default function SignIn({setToken, setRole}) {
                   try {
                     login(data.username, data.password)
                         .then(data => {
-                            // localStorage.setItem('accessToken', token); //Cохранение токена доступа
                             setToken(data);
                             setRole(data);
+                            setId(data);
                             navigate('/main');
                         }
                         )

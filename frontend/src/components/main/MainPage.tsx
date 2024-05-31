@@ -17,13 +17,13 @@ import OrderTable from '../OrderTable/OrderTable';
 import Header from '../Header/Header';
 import { Outlet } from "react-router-dom";
 
-export default function JoyOrderDashboardTemplate( {role} ) {
+export default function JoyOrderDashboardTemplate( {role, removeToken} ) {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
       <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
         <Header />
-        <Sidebar role={role}/>
+        <Sidebar role={role} removeToken={removeToken}/>
         <Box
           component="main"
           className="MainContent"

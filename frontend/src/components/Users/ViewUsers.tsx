@@ -811,10 +811,10 @@ export default function UserTable() {
                                     name="group_name"
                                     required
                                 >
-                                    <Option value="123">123</Option>
-                                    <Option value="234">Методист</Option>
-                                    <Option value="345">Работник общежития</Option>
-                                    <Option value="456">Студент</Option>
+                                    <Option value="АСОиУб-20-1">АСОиУб-20-1</Option>
+                                    <Option value="АСОиУб-20-2">АСОиУб-20-2</Option>
+                                    <Option value="АСОиУб-20-3">АСОиУб-20-3</Option>
+                                    <Option value="АСОиУб-20-4">АСОиУб-20-4</Option>
                                 </Select>
                             </FormControl>
                         )}

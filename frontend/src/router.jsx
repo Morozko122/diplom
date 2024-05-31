@@ -32,12 +32,12 @@ function ProtectedRoute({ token, role, requiredRoles, children }) {
 
 
 function Router() {
-   const { token, role, setRole, removeToken, setToken } = useToken();
+   const { token, role, setRole, removeToken, setToken, setId } = useToken();
    return (
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<TemplatePage />}>
-          <Route path="login" element={!token ? <SignIn setToken={setToken} setRole={setRole} /> : <Navigate to="/main" replace />} />
+          <Route path="login" element={!token ? <SignIn setToken={setToken} setRole={setRole} setId={setId}/> : <Navigate to="/main" replace />} />
           <Route 
             path="main" 
             element={
