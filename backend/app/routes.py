@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask import jsonify, render_template
 from flask import render_template_string
-from flask_security import auth_required, permissions_accepted, current_user, hash_password
+from flask_security import auth_required, permissions_accepted, current_user, hash_password, verify_password
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies
 from app.decorator import roles_required 
 from app.database import db_session
@@ -17,9 +17,9 @@ def login():
    username = request.json.get('username', None)
    password = request.json.get('password', None)
 
-   user = app.security.datastore.find_user(username=username)
+   user = app.security.datastore.find_user(email=username)
   
-   if user and user.password == password:
+   if user and verify_password(password, user.password):
        access_token = create_access_token(identity=user.username,  additional_claims={"role": user.roles[0].name})
        return jsonify(access_token=access_token, user_role=user.roles[0].name), 200
    else:
@@ -219,7 +219,7 @@ def add_user():
         username=data.get('username', ''),
         password=hash_password(data['password']),
         active=data.get('active', True),
-        fs_uniquifier=data['fs_uniquifier']
+        
     )
 
     # Add user to database
@@ -240,7 +240,9 @@ def add_user():
         new_student = Student(user_id=new_user.id, group_id=group.id)
         db_session.add(new_student)
     elif role_name == 'methodologist':
-        new_methodologist = Methodologist(user_id=new_user.id, full_name='pohui')
+        query_id_select = User.query.filter_by(email=new_user.email).first()
+        print(query_id_select)
+        new_methodologist = Methodologist(id=query_id_select.id, full_name='pohui')
         db_session.add(new_methodologist)
 
     # Commit all changes to the database
@@ -256,7 +258,18 @@ def bad_request(error):
     return response
 
 
-
+@app.route('/methodologists', methods=['GET'])
+def get_methodologists():
+    methodologists = Methodologist.query.all()
+    methodologists_list = [
+        {
+            'id': methodologist.id,
+            'full_name': methodologist.full_name
+        }
+        for methodologist in methodologists
+    ]
+    return jsonify(methodologists_list)
+    
 
 @app.route('/users/<int:user_id>', methods=['PUT'])
 def edit_user(user_id):
@@ -269,3 +282,16 @@ def edit_user(user_id):
     user.fs_uniquifier = data.get('fs_uniquifier', user.fs_uniquifier)
     db_session.commit()
     return jsonify({"message": "User updated", "user": user.email})
+
+
+@app.route('/groups', methods=['POST'])
+def add_group():
+    data = request.json
+    new_group = Group(
+        name=data['groupName'],
+        methodologist_id=data['methodologist']
+    )
+    db_session.add(new_group)
+    db_session.commit()
+    return jsonify({"message": "Group added", "group": new_group.name})
+    

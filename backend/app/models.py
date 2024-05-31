@@ -113,23 +113,21 @@ class Group(Base):
     __tablename__ = 'group'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    methodologist_id = Column(Integer, ForeignKey('methodologist.id'), nullable=False)
+    methodologist_id = Column(Integer, ForeignKey('methodologist.id'), nullable=True)
     methodologist = relationship("Methodologist", back_populates="groups")
     students = relationship("Student", back_populates="group")
 
 class Methodologist(Base):
     __tablename__ = 'methodologist'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
     full_name = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     user = relationship("User", back_populates="methodologist")
     groups = relationship("Group", back_populates="methodologist")
 
 class Student(Base):
     __tablename__ = 'student'
-    personal_number = Column(Integer, primary_key=True)
     group_id = Column(Integer, ForeignKey('group.id'))
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
     group = relationship("Group", back_populates="students")
     applications = relationship("Application", back_populates="student")
     user = relationship("User", back_populates="student")
@@ -137,7 +135,7 @@ class Student(Base):
 class Application(Base):
     __tablename__ = 'application'
     id = Column(Integer, primary_key=True)
-    personal_number = Column(Integer, ForeignKey('student.personal_number'))
+    personal_number = Column(Integer, ForeignKey('student.user_id'))
     name = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
     status = Column(String, nullable=False)

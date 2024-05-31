@@ -1,5 +1,5 @@
 // import * as React from 'react';
-// import { useState } from 'react';
+// import { useState, useEffect } from 'react';
 // import {
 //     Box,
 //     Button,
@@ -49,31 +49,69 @@
 // export default function UserTable() {
 //     const [rows, setRow] = useState([]);
 //     const [open, setOpen] = useState(false);
+//     const [openGroupModal, setOpenGroupModal] = useState(false);
 //     const [formData, setFormData] = useState({
 //         email: '',
 //         username: '',
-//         password: ''
+//         password: '',
+//         fs_uniquifier: '',
+//         role: '',
+//         group_name: '',
 //     });
+//     const [groupData, setGroupData] = useState({
+//         groupName: '',
+//         methodologist: '',
+//     });
+//     const [methodologists, setMethodologists] = useState([]);
 
 //     const handleOpen = () => setOpen(true);
 //     const handleClose = () => setOpen(false);
+//     const handleOpenGroupModal = () => setOpenGroupModal(true);
+//     const handleCloseGroupModal = () => setOpenGroupModal(false);
 
 //     const handleChange = (e) => {
-//         setFormData({ ...formData, [e.target.name]: e.target.value });
+//         const { name, value } = e.target;
+//         setFormData(prevFormData => ({
+//             ...prevFormData,
+//             [name]: value
+//         }));
+//         console.log(methodologists)
 //     };
-
+//     const handleGroupChange = (e) => {
+//         const { name, value } = e.target;
+//         setGroupData(prevGroupData => ({
+//             ...prevGroupData,
+//             [name]: value
+//         }));
+//     };
 //     const handleSubmit = async () => {
 //         try {
 //             const response = await axios.post('http://localhost:5000/users', formData);
 //             console.log(response.data);
-//             fetchSpravki(1); // Fetch the updated list of users after adding a new user
+//             fetchUser(); // Fetch the updated list of users after adding a new user
 //             handleClose();
 //         } catch (error) {
 //             console.error('Error adding user:', error);
 //         }
 //     };
-
-//     const fetchSpravki = async (id) => {
+//     const fetchMethodologists = async () => {
+//         try {
+//             const response = await axios.get('http://localhost:5000/methodologists');
+//             setMethodologists(response.data);
+//         } catch (error) {
+//             console.error('Error fetching methodologists:', error);
+//         }
+//     };
+//     const handleSubmitGroup = async () => {
+//         try {
+//             const response = await axios.post('http://localhost:5000/groups', groupData);
+//             console.log(response.data);
+//             handleClose();
+//         } catch (error) {
+//             console.error('Error adding group:', error);
+//         }
+//     };
+//     const fetchUser = async () => {
 //         try {
 //             const response = await axios.get('http://localhost:5000/users');
 //             setRow(response.data);
@@ -84,7 +122,8 @@
 //     };
 
 //     React.useEffect(() => {
-//         fetchSpravki(1);
+//         fetchUser();
+//         fetchMethodologists();
 //     }, []);
 
 //     const renderFilters = () => (
@@ -142,8 +181,12 @@
 //                 <Typography level="h2" component="h1">
 //                     Пользователи
 //                 </Typography>
+
 //                 <Button variant="solid" color="primary" onClick={handleOpen}>
 //                     Добавить пользователя
+//                 </Button>
+//                 <Button variant="solid" color="primary" onClick={handleOpenGroupModal}>
+//                         Создать группу
 //                 </Button>
 //             </Box>
 //             <Box
@@ -267,11 +310,8 @@
 //                         top: '50%',
 //                         left: '50%',
 //                         transform: 'translate(-50%, -50%)',
-//                         width: 400,
-//                         bgcolor: 'background.paper',
-//                         boxShadow: 24,
-//                         p: 4,
-//                         borderRadius: '8px'
+//                         width: '400px',
+//                         maxWidth: '100%',
 //                     }}
 //                 >
 //                     <ModalClose onClick={handleClose} />
@@ -306,6 +346,34 @@
 //                                 required
 //                             />
 //                         </FormControl>
+//                         <FormControl fullWidth sx={{ mt: 2 }}>
+//                             <FormLabel>Роль</FormLabel>
+//                             <Select
+//                                 name="role"
+//                                 onChange={handleChange}
+//                                 required
+//                             >
+//                                 <Option value="admin">Администратор</Option>
+//                                 <Option value="methodologist">Методист</Option>
+//                                 <Option value="hostel-employee">Работник общежития</Option>
+//                                 <Option value="student">Студент</Option>
+//                             </Select>
+//                         </FormControl>
+//                         {formData.role === 'student' && (
+//                             <FormControl fullWidth sx={{ mt: 2 }}>
+//                                 <FormLabel>Группа</FormLabel>
+//                                 <Select
+//                                     name="group_name"
+//                                     onChange={handleChange}
+//                                     required
+//                                 >
+//                                     <Option value="123">123</Option>
+//                                     <Option value="234">Методист</Option>
+//                                     <Option value="345">Работник общежития</Option>
+//                                     <Option value="456">Студент</Option>
+//                                 </Select>
+//                             </FormControl>
+//                         )}
 //                         <Button
 //                             fullWidth
 //                             variant="solid"
@@ -317,10 +385,56 @@
 //                         </Button>
 //                     </Box>
 //                 </ModalDialog>
+//             </Modal> 
+//             <Modal open={openGroupModal} onClose={handleCloseGroupModal}>
+//                 <ModalDialog
+//                     aria-labelledby="group-modal-title"
+//                     aria-describedby="group-modal-description"
+//                     sx={{ maxWidth: 500 }}
+//                 >
+//                     <Typography id="group-modal-title" component="h2">
+//                         Создать группу
+//                     </Typography>
+//                     <form
+//                         onSubmit={(event) => {
+//                             event.preventDefault();
+//                             handleSubmitGroup();
+//                         }}
+//                     >
+//                         <Typography>
+//                             <Input
+//                                 placeholder="Название группы"
+//                                 required
+//                                 type="text"
+//                                 name="groupName"
+//                                 value={groupData.groupName}
+//                                 onChange={handleGroupChange}
+//                             />
+//                             {methodologists &&(
+//                             <Select
+//                                 placeholder="Выбрать методолога"
+//                                 name="methodologist"
+//                                 value={groupData.methodologist}
+//                                 onChange={handleGroupChange}
+//                             >
+//                                 {methodologists.map((methodologist) => (
+//                                     <Option key={methodologist.id} value={methodologist.id}>
+//                                         {methodologist.full_name}
+//                                     </Option>
+//                                 ))}
+//                             </Select>)}
+//                         </Typography>
+//                         <Button type="submit">Создать</Button>
+//                     </form>
+//                 </ModalDialog>
 //             </Modal>
 //         </React.Fragment>
 //     );
 // }
+
+
+
+
 import * as React from 'react';
 import { useState } from 'react';
 import {
@@ -359,9 +473,7 @@ function RowMenu() {
                 <MoreHorizRoundedIcon />
             </MenuButton>
             <Menu size="sm" sx={{ minWidth: 140 }}>
-                <MenuItem>Edit</MenuItem>
-                <MenuItem>Rename</MenuItem>
-                <MenuItem>Move</MenuItem>
+                <MenuItem>Изменить</MenuItem>
                 <Divider />
                 <MenuItem color="danger">Delete</MenuItem>
             </Menu>
@@ -372,50 +484,81 @@ function RowMenu() {
 export default function UserTable() {
     const [rows, setRow] = useState([]);
     const [open, setOpen] = useState(false);
+    const [openGroup, setGroupOpen] = useState(false);
     const [formData, setFormData] = useState({
-        email: '',
-        username: '',
-        password: '',
-        fs_uniquifier: '',
         role: '',
-        group_name: '',
     });
+
+    const [groupData, setGroupData] = useState({
+        groupName: '',
+        methodologist: '',
+    });
+    const [methodologists, setMethodologists] = useState([]);
+
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
+
+    const handleGroupOpen = () => setGroupOpen(true);
+    const handleGroupClose = () => setGroupOpen(false);
+
+
+    const handleChange = (name, value) => {
         setFormData(prevFormData => ({
             ...prevFormData,
             [name]: value
         }));
     };
 
-    const handleRoleChange = (e, newValue) => {
-        setFormData(prevFormData => ({
+
+    const handleGroupChange = (name, value) => {
+        setGroupData(prevFormData => ({
             ...prevFormData,
-            role: newValue
+            [name]: value
         }));
     };
-    const handleGroupChange = (e, newValue) => {
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            group_name: newValue
-        }));
-    };
-    const handleSubmit = async () => {
+
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const formDatas = new FormData(event.currentTarget);
+        const formJson = Object.fromEntries((formDatas as any).entries());
+
         try {
-            const response = await axios.post('http://localhost:5000/users', formData);
+            const response = await axios.post('http://localhost:5000/users', formJson);
             console.log(response.data);
-            fetchSpravki(1); // Fetch the updated list of users after adding a new user
+            fetchUser();
+            fetchMethodologists();
             handleClose();
         } catch (error) {
             console.error('Error adding user:', error);
         }
     };
 
-    const fetchSpravki = async (id) => {
+    const handleSubmitGroup = async (event) => {
+        event.preventDefault();
+        const formDatas = new FormData(event.currentTarget);
+        const formJson = Object.fromEntries((formDatas as any).entries());
+        try {
+            const response = await axios.post('http://localhost:5000/groups', formJson);
+
+            handleGroupClose();
+        } catch (error) {
+            console.error('Error adding group:', error);
+        }
+    };
+
+    const fetchMethodologists = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/methodologists');
+            setMethodologists(response.data);
+        } catch (error) {
+            console.error('Error fetching methodologists:', error);
+        }
+    };
+
+    const fetchUser = async () => {
         try {
             const response = await axios.get('http://localhost:5000/users');
             setRow(response.data);
@@ -426,7 +569,8 @@ export default function UserTable() {
     };
 
     React.useEffect(() => {
-        fetchSpravki(1);
+        fetchUser();
+        fetchMethodologists()
     }, []);
 
     const renderFilters = () => (
@@ -486,6 +630,9 @@ export default function UserTable() {
                 </Typography>
                 <Button variant="solid" color="primary" onClick={handleOpen}>
                     Добавить пользователя
+                </Button>
+                <Button variant="solid" color="primary" onClick={handleGroupOpen}>
+                    Создать группу
                 </Button>
             </Box>
             <Box
@@ -617,39 +764,38 @@ export default function UserTable() {
                     <Typography id="add-user-modal" level="h6" component="h2">
                         Добавить нового пользователя
                     </Typography>
-                    <Box component="form" sx={{ mt: 1 }}>
-                        <FormControl fullWidth>
+                    <form
+                        onSubmit={handleSubmit}
+                    >
+                        <FormControl >
                             <FormLabel>Почта</FormLabel>
                             <Input
                                 type="email"
                                 name="email"
-                                onChange={handleChange}
                                 required
                             />
                         </FormControl>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
+                        <FormControl sx={{ mt: 2 }}>
                             <FormLabel>Имя пользователя</FormLabel>
                             <Input
                                 type="text"
                                 name="username"
-                                onChange={handleChange}
                                 required
                             />
                         </FormControl>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
+                        <FormControl sx={{ mt: 2 }}>
                             <FormLabel>Пароль</FormLabel>
                             <Input
                                 type="password"
                                 name="password"
-                                onChange={handleChange}
                                 required
                             />
                         </FormControl>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
+                        <FormControl sx={{ mt: 2 }}>
                             <FormLabel>Роль</FormLabel>
                             <Select
                                 name="role"
-                                onChange={(e, newValue) => handleRoleChange(e, newValue)}
+                                onChange={(e, value) => handleChange("role", value)}
                                 required
                             >
                                 <Option value="admin">Администратор</Option>
@@ -658,29 +804,83 @@ export default function UserTable() {
                                 <Option value="student">Студент</Option>
                             </Select>
                         </FormControl>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                            <FormLabel>Группа</FormLabel>
-                            <Select
-                                name="group_name"
-                                onChange={(e, newValue) => handleGroupChange(e, newValue)}
-                                required
-                            >
-                                <Option value="123">123</Option>
-                                <Option value="234">Методист</Option>
-                                <Option value="345">Работник общежития</Option>
-                                <Option value="456">Студент</Option>
-                            </Select>
-                        </FormControl>
+                        {formData.role === 'student' && (
+                            <FormControl sx={{ mt: 2 }}>
+                                <FormLabel>Группа</FormLabel>
+                                <Select
+                                    name="group_name"
+                                    required
+                                >
+                                    <Option value="123">123</Option>
+                                    <Option value="234">Методист</Option>
+                                    <Option value="345">Работник общежития</Option>
+                                    <Option value="456">Студент</Option>
+                                </Select>
+                            </FormControl>
+                        )}
                         <Button
-                            fullWidth
+                            type="submit"
                             variant="solid"
                             color="primary"
-                            onClick={handleSubmit}
+
                             sx={{ mt: 2 }}
                         >
                             Сохранить
                         </Button>
-                    </Box>
+
+
+                    </form>
+                </ModalDialog>
+            </Modal>
+            <Modal open={openGroup} onClose={handleGroupClose}>
+                <ModalDialog
+                    aria-labelledby="add-user-modal"
+                    aria-describedby="add-user-modal-description"
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '400px',
+                        maxWidth: '100%',
+                    }}
+                >
+                    <ModalClose onClick={handleGroupClose} />
+                    <Typography id="add-user-modal" level="h6" component="h2">
+                        Создать группу
+                    </Typography>
+                    <form onSubmit={handleSubmitGroup}>
+                        <FormControl >
+                            <FormLabel>Наименование группы</FormLabel>
+                            <Input
+                                type="text"
+                                name="groupName"
+                                required
+                            />
+                        </FormControl>
+                        <FormControl sx={{ mt: 2 }}>
+                            <FormLabel>Методист</FormLabel>
+                            <Select
+                                name="methodologist"
+                                required
+                            >
+                                {methodologists.map((methodologist) => (
+                                    <Option key={methodologist.id} value={methodologist.id}>
+                                        {methodologist.full_name}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button
+                            type="submit"
+                            variant="solid"
+                            color="primary"
+
+                            sx={{ mt: 2 }}
+                        >
+                            Сохранить
+                        </Button>
+                    </form>
                 </ModalDialog>
             </Modal>
         </React.Fragment>
