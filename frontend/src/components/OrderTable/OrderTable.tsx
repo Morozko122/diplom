@@ -100,7 +100,7 @@
 //   const [open, setOpen] = React.useState(false);
 //   const [rows, setRow] = React.useState([]);
 //   console.log(rows);
- 
+
 //   const fetchSpravki = async (id) => {
 //     try {
 //       const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`);
@@ -169,9 +169,9 @@
 //             <Typography level="h2" component="h1">
 //               Заказы
 //             </Typography>
-            
+
 //           </Box>
-      
+
 //       <Box
 //         className="SearchAndFilters-tabletUp"
 //         sx={{
@@ -185,7 +185,7 @@
 //           },
 //         }}
 //       >
-        
+
 //         {renderFilters()}
 //       </Box>
 //       <Sheet
@@ -319,7 +319,7 @@
 //                 </td>
 //                 <td>
 //                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    
+
 //                     <RowMenu />
 //                   </Box>
 //                 </td>
@@ -375,7 +375,7 @@
 //   );
 // }
 
-
+import { useState } from 'react';
 import * as React from 'react';
 import axios from 'axios';
 import Box from '@mui/joy/Box';
@@ -388,17 +388,25 @@ import Typography from '@mui/joy/Typography';
 import TableComponent from '../Table/TableComponent';
 import useToken from '../useToken/useToken';
 
-export default function OrderTable({token}) {
+
+
+
+export default function OrderTable({ token }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [rows, setRow] = React.useState([]);
   const userId = localStorage.getItem('user_id');
+
+  
+
   const fetchSpravki = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`, {headers: 
-      {
-        'Authorization': `Bearer ${token}`, 
-        'Content-Type': `application/json`
-      }});
+      const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`, {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `application/json`
+        }
+      });
       setRow(response.data);
     } catch (error) {
       console.error('Error fetching spravki:', error);
@@ -510,9 +518,10 @@ export default function OrderTable({token}) {
           rows={rows}
           selected={selected}
           setSelected={setSelected}
+          token={token}
         />
       </Sheet>
-
+      
       {/* <Box
         className="Pagination-laptopUp"
         sx={{
@@ -556,6 +565,7 @@ export default function OrderTable({token}) {
           Next
         </Button>
       </Box> */}
+
     </React.Fragment>
   );
 }

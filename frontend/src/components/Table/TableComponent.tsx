@@ -7,17 +7,67 @@ import Chip from '@mui/joy/Chip';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import BlockIcon from '@mui/icons-material/Block';
+import { useState } from 'react';
+import {
+  Button,
+  Modal,
+  Input,
+  ModalDialog,
+  ModalClose,
+  FormControl,
+  FormLabel,
+  Option,
+  Select
+ 
+} from '@mui/joy';
+import axios from 'axios';
 
 interface TableComponentProps {
   columns: string[];
   rows: any[];
   selected: readonly string[];
   setSelected: React.Dispatch<React.SetStateAction<readonly string[]>>;
+  token: string;
 }
 
 
-const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token}) => {
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const handleOpenEdit = () => setOpenEdit(true);
+  const handleCloseEdit = () => setOpenEdit(false);
+
+  const updateApplication = async (newStatus) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/update_application/${selectedRow?.id}`, {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `application/json`
+        },
+        "status":newStatus
+        
+        
+      });
+      handleCloseEdit();
+    } catch (error) {
+      console.error('Error update:', error);
+    }
+  };
+
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    handleOpenEdit()
+  };
+
+  const handleClose = () => {
+    handleCloseEdit()
+    setSelectedRow(null);
+  };
+
+
   return (
+    <>
     <Table
       aria-labelledby="tableTitle"
       stickyHeader
@@ -54,7 +104,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={row.id}>
+          <tr key={row.id} onClick={() => handleRowClick(row)}>
             <td style={{ textAlign: 'center', width: 120 }}>
               <Checkbox
                 size="sm"
@@ -92,14 +142,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
                 size="sm"
                 startDecorator={
                   {
-                    Paid: <CheckRoundedIcon />,
+                    "Готово": <CheckRoundedIcon />,
                     "В работе": <AutorenewRoundedIcon />,
                     Cancelled: <BlockIcon />,
                   }[row.status]
                 }
                 color={
                   {
-                    Paid: 'success',
+                    "Готово": 'success',
                     "В работе": 'neutral',
                     Cancelled: 'danger',
                   }[row.status] as ColorPaletteProp
@@ -115,7 +165,75 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
         ))}
       </tbody>
     </Table>
+    <Modal open={openEdit} onClose={handleClose}>
+        <ModalDialog
+          aria-labelledby="add-user-modal"
+          aria-describedby="add-user-modal-description"
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '400px',
+            maxWidth: '100%',
+          }}
+        >
+          <ModalClose onClick={handleClose} />
+          <Typography id="add-user-modal" level="h6" component="h2">
+            Редактировать
+          </Typography>
+          <form> 
+          
+          {selectedRow && (
+            <>
+              <Typography sx={{ mt: 2 }}>
+                ID: {selectedRow.id}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              Личный номер: {selectedRow.personal_number}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              Дата: {selectedRow.date}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              Наименование: {selectedRow.name}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              Кол-во: {selectedRow.quantity}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              Статус: {selectedRow.status}
+              </Typography>
+              <Typography sx={{ mt: 2 }}>
+              ФИО студента: {selectedRow.full_name}
+              </Typography>
+            </>
+          )}
+            
+            <Button
+              onClick={() => updateApplication('Готово')}
+              variant="solid"
+              color="success"
+
+              sx={{ mt: 2, mr:2 }}
+            >
+              Готово
+            </Button>
+            <Button
+              onClick={() => updateApplication('В работе')}
+              variant="solid"
+              color="neutral"
+
+              sx={{ mt: 2 }}
+            >
+              В работе
+            </Button>
+          </form>
+        </ModalDialog>
+      </Modal>
+    </>
   );
+  
 };
 
 export default TableComponent;

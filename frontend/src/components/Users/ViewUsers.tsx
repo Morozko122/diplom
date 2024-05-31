@@ -494,6 +494,7 @@ export default function UserTable() {
         methodologist: '',
     });
     const [methodologists, setMethodologists] = useState([]);
+    const [groups, setGroups] = useState([]);
 
 
     const handleOpen = () => setOpen(true);
@@ -557,6 +558,15 @@ export default function UserTable() {
             console.error('Error fetching methodologists:', error);
         }
     };
+    
+    const fetchGroups = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/groups');
+            setGroups(response.data);
+        } catch (error) {
+            console.error('Error fetching methodologists:', error);
+        }
+    };
 
     const fetchUser = async () => {
         try {
@@ -570,7 +580,8 @@ export default function UserTable() {
 
     React.useEffect(() => {
         fetchUser();
-        fetchMethodologists()
+        fetchMethodologists();
+        fetchGroups();
     }, []);
 
     const renderFilters = () => (
@@ -811,10 +822,11 @@ export default function UserTable() {
                                     name="group_name"
                                     required
                                 >
-                                    <Option value="АСОиУб-20-1">АСОиУб-20-1</Option>
-                                    <Option value="АСОиУб-20-2">АСОиУб-20-2</Option>
-                                    <Option value="АСОиУб-20-3">АСОиУб-20-3</Option>
-                                    <Option value="АСОиУб-20-4">АСОиУб-20-4</Option>
+                                     {groups.map((group) => (
+                                    <Option key={group.id} value={group.id}>
+                                        {group.name}
+                                    </Option>
+                                    ))}
                                 </Select>
                             </FormControl>
                         )}

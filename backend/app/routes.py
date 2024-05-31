@@ -80,6 +80,34 @@ def add_application():
 
     return jsonify({"message": "Application added successfully"}), 201
 
+@app.route('/update_application/<int:application_id>', methods=['PUT'])
+def update_application(application_id):
+    # Get the data from the request
+    data = request.json
+    print(data)
+    print(data.get('status'))
+    application = Application.query.filter_by(id = application_id).all()[0]
+
+        # Check if application exists
+    if not application:
+        return jsonify({"error": "Application not found"}), 404
+
+        # Update the fields
+    if 'personal_number' in data:
+        application.personal_number = data.get('personal_number')
+    if 'name' in data:
+        application.name = data.get('name')
+    if 'quantity' in data:
+        application.quantity = data.get('quantity')
+    if 'status' in data:
+        application.status = data.get('status')
+    
+
+        # Commit the changes
+    db_session.commit()
+
+    return jsonify({"message": "Application updated successfully"})
+
 @app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
 @jwt_required()
 def get_applications_for_methodologist(methodologist_id):
@@ -260,4 +288,17 @@ def add_group():
     db_session.add(new_group)
     db_session.commit()
     return jsonify({"message": "Group added", "group": new_group.name})
-    
+
+@app.route('/groups', methods=['GET'])
+def get_group():
+    groups = Group.query.all()
+    groups_list =  [
+        {
+            'id': group.id,
+            'name': group.name,
+            'methodologist_id': group.methodologist_id,
+            
+        }
+        for group in groups
+    ]
+    return jsonify(groups_list)
