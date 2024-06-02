@@ -297,7 +297,7 @@ def get_group():
             'id': group.id,
             'name': group.name,
             'methodologist_id': group.methodologist_id,
-            
+            'methodologist':group.methodologist.full_name
         }
         for group in groups
     ]

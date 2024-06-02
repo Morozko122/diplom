@@ -396,7 +396,7 @@ export default function OrderTable({ token }) {
   const [rows, setRow] = React.useState([]);
   const userId = localStorage.getItem('user_id');
 
-  
+
 
   const fetchSpravki = async (id) => {
     try {
@@ -498,7 +498,7 @@ export default function OrderTable({ token }) {
           },
         }}
       >
-        {renderFilters()}
+        {/* {renderFilters()} */}
       </Box>
 
       <Sheet
@@ -523,7 +523,7 @@ export default function OrderTable({ token }) {
           userId={Number(userId)}
         />
       </Sheet>
-      
+
       {/* <Box
         className="Pagination-laptopUp"
         sx={{

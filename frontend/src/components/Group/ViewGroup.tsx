@@ -44,61 +44,15 @@ function RowMenu() {
     );
 }
 
-export default function UserTable() {
+export default function GroupTable() {
     const [rows, setRow] = useState([]);
-    const [open, setOpen] = useState(false);
     const [openGroup, setGroupOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        role: '',
-    });
 
-    const [groupData, setGroupData] = useState({
-        groupName: '',
-        methodologist: '',
-    });
     const [methodologists, setMethodologists] = useState([]);
     const [groups, setGroups] = useState([]);
 
-
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
-
     const handleGroupOpen = () => setGroupOpen(true);
     const handleGroupClose = () => setGroupOpen(false);
-
-
-    const handleChange = (name, value) => {
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }));
-    };
-
-
-    const handleGroupChange = (name, value) => {
-        setGroupData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }));
-    };
-
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const formDatas = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formDatas as any).entries());
-
-        try {
-            const response = await axios.post('http://localhost:5000/users', formJson);
-            console.log(response.data);
-            fetchUser();
-            fetchMethodologists();
-            handleClose();
-        } catch (error) {
-            console.error('Error adding user:', error);
-        }
-    };
 
     const handleSubmitGroup = async (event) => {
         event.preventDefault();
@@ -108,6 +62,7 @@ export default function UserTable() {
             const response = await axios.post('http://localhost:5000/groups', formJson);
 
             handleGroupClose();
+            fetchGroups();
         } catch (error) {
             console.error('Error adding group:', error);
         }
@@ -131,18 +86,8 @@ export default function UserTable() {
         }
     };
 
-    const fetchUser = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/users');
-            setRow(response.data);
-        } catch (error) {
-            console.error('Error fetching spravki:', error);
-            setRow([]);
-        }
-    };
 
     React.useEffect(() => {
-        fetchUser();
         fetchMethodologists();
         fetchGroups();
     }, []);
@@ -200,7 +145,7 @@ export default function UserTable() {
                 }}
             >
                 <Typography level="h2" component="h1">
-                    Пользователи
+                    Группы
                 </Typography>
                 <Box sx={{
                     display: 'flex',
@@ -211,9 +156,6 @@ export default function UserTable() {
                     flexWrap: 'wrap',
                     justifyContent: 'space-between',
                 }}>
-                <Button variant="solid" color="primary" onClick={handleOpen}>
-                    Добавить пользователя
-                </Button>
                 <Button variant="solid" color="primary" onClick={handleGroupOpen}>
                     Создать группу
                 </Button>
@@ -260,23 +202,27 @@ export default function UserTable() {
                 >
                     <thead>
                         <tr>
-                            <th style={{ width: 120, padding: '12px 6px' }}>Id</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>Почта</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>Имя пользователя</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}> </th>
+                            <th style={{ width: 120, padding: '12px 6px' }}>ID</th>
+                            <th style={{ width: 140, padding: '12px 6px' }}>Название</th>
+                            <th style={{ width: 140, padding: '12px 6px' }}>ID работника</th>
+                            <th style={{ width: 140, padding: '12px 6px' }}>ФИО работника</th>
+                            <th style={{ width: 140, padding: '12px 6px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((row) => (
+                        {groups.map((row) => (
                             <tr key={row.id}>
                                 <td>
                                     <Typography level="body-xs">{row.id}</Typography>
                                 </td>
                                 <td>
-                                    <Typography level="body-xs">{row.email}</Typography>
+                                    <Typography level="body-xs">{row.name}</Typography>
                                 </td>
                                 <td>
-                                    <Typography level="body-xs">{row.username}</Typography>
+                                    <Typography level="body-xs">{row.methodologist_id}</Typography>
+                                </td>
+                                <td>
+                                    <Typography level="body-xs">{row.methodologist}</Typography>
                                 </td>
                                 <td>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -300,122 +246,7 @@ export default function UserTable() {
                     },
                 }}
             >
-                {/* <Button
-                    size="sm"
-                    variant="outlined"
-                    color="neutral"
-                    startDecorator={<KeyboardArrowLeftIcon />}
-                >
-                    Previous
-                </Button>
-
-                <Box sx={{ flex: 1 }} />
-                {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
-                    <IconButton
-                        key={page}
-                        size="sm"
-                        variant={Number(page) ? 'outlined' : 'plain'}
-                        color="neutral"
-                    >
-                        {page}
-                    </IconButton>
-                ))}
-                <Box sx={{ flex: 1 }} />
-
-                <Button
-                    size="sm"
-                    variant="outlined"
-                    color="neutral"
-                    endDecorator={<KeyboardArrowRightIcon />}
-                >
-                    Next
-                </Button> */}
             </Box>
-            <Modal open={open} onClose={handleClose}>
-                <ModalDialog
-                    aria-labelledby="add-user-modal"
-                    aria-describedby="add-user-modal-description"
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '400px',
-                        maxWidth: '100%',
-                    }}
-                >
-                    <ModalClose onClick={handleClose} />
-                    <Typography id="add-user-modal" level="h6" component="h2">
-                        Добавить нового пользователя
-                    </Typography>
-                    <form
-                        onSubmit={handleSubmit}
-                    >
-                        <FormControl >
-                            <FormLabel>Почта</FormLabel>
-                            <Input
-                                type="email"
-                                name="email"
-                                required
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Имя пользователя</FormLabel>
-                            <Input
-                                type="text"
-                                name="username"
-                                required
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Пароль</FormLabel>
-                            <Input
-                                type="password"
-                                name="password"
-                                required
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Роль</FormLabel>
-                            <Select
-                                name="role"
-                                onChange={(e, value) => handleChange("role", value)}
-                                required
-                            >
-                                <Option value="admin">Администратор</Option>
-                                <Option value="methodologist">Методист</Option>
-                                <Option value="hostel-employee">Работник общежития</Option>
-                                <Option value="student">Студент</Option>
-                            </Select>
-                        </FormControl>
-                        {formData.role === 'student' && (
-                            <FormControl sx={{ mt: 2 }}>
-                                <FormLabel>Группа</FormLabel>
-                                <Select
-                                    name="group_name"
-                                    required
-                                >
-                                     {groups.map((group) => (
-                                    <Option key={group.id} value={group.id}>
-                                        {group.name}
-                                    </Option>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        )}
-                        <Button
-                            type="submit"
-                            variant="solid"
-                            color="primary"
-                            sx={{ mt: 2 }}
-                        >
-                            Сохранить
-                        </Button>
-
-
-                    </form>
-                </ModalDialog>
-            </Modal>
             <Modal open={openGroup} onClose={handleGroupClose}>
                 <ModalDialog
                     aria-labelledby="add-user-modal"
