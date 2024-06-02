@@ -212,14 +212,9 @@ export default function Sidebar({ role, removeToken }) {
       </Box>
       <Divider />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Avatar
-          variant="outlined"
-          size="sm"
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
-        />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Siriwat K.</Typography>
-          <Typography level="body-xs">siriwatk@test.com</Typography>
+          <Typography level="title-sm">Иванов И.И.</Typography>
+          <Typography level="body-xs">ivanovii@test.com</Typography>
         </Box>
         <IconButton size="sm" variant="plain" color="neutral" onClick={() => removeToken()}>
           <LogoutRoundedIcon />

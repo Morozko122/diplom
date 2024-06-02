@@ -519,6 +519,8 @@ export default function OrderTable({ token }) {
           selected={selected}
           setSelected={setSelected}
           token={token}
+          fetchSpravki={fetchSpravki}
+          userId={Number(userId)}
         />
       </Sheet>
       

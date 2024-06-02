@@ -12,7 +12,7 @@ function useToken() {
   function saveToken(userToken) {
     localStorage.setItem('accessToken', userToken["access_token"]);
     setToken(userToken["access_token"]);
-  };
+  }
 
   const [role, setRole] = useState(getRole());
 
@@ -24,7 +24,7 @@ function useToken() {
   function saveRole(userRole) {
     localStorage.setItem('role', userRole["user_role"]);
     setRole(userRole["user_role"]);
-  };
+  }
 
   const [userId, setId] = useState(getId());  
 
@@ -36,7 +36,7 @@ function useToken() {
   function saveId(userId) {
     localStorage.setItem('user_id', userId["user_id"]);
     setId(userId["user_id"]);
-  };
+  }
 
   function removeToken() {
     localStorage.removeItem("accessToken");
