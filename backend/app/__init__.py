@@ -16,12 +16,10 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 migrate = Migrate(app, db)
 
-app.teardown_appcontext(lambda exc: db_session.close())
-
-# Setup Flask-Security
 user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
 app.security = Security(app, user_datastore)
 
+app.teardown_appcontext(lambda exc: db_session.close())
 
 with app.app_context():
     init_db()
