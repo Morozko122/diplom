@@ -28,10 +28,12 @@ interface TableComponentProps {
   selected: readonly string[];
   setSelected: React.Dispatch<React.SetStateAction<readonly string[]>>;
   token: string;
+  fetchSpravki: any;
+  userId: number;
 }
 
 
-const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token}) => {
+const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token, fetchSpravki, userId}) => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -50,6 +52,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
         
       });
       handleCloseEdit();
+      fetchSpravki(userId);
     } catch (error) {
       console.error('Error update:', error);
     }
