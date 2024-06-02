@@ -47,15 +47,10 @@ function RowMenu() {
 export default function UserTable() {
     const [rows, setRow] = useState([]);
     const [open, setOpen] = useState(false);
-    const [openGroup, setGroupOpen] = useState(false);
     const [formData, setFormData] = useState({
         role: '',
     });
 
-    const [groupData, setGroupData] = useState({
-        groupName: '',
-        methodologist: '',
-    });
     const [methodologists, setMethodologists] = useState([]);
     const [groups, setGroups] = useState([]);
 
@@ -63,26 +58,12 @@ export default function UserTable() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-
-    const handleGroupOpen = () => setGroupOpen(true);
-    const handleGroupClose = () => setGroupOpen(false);
-
-
     const handleChange = (name, value) => {
         setFormData(prevFormData => ({
             ...prevFormData,
             [name]: value
         }));
     };
-
-
-    const handleGroupChange = (name, value) => {
-        setGroupData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }));
-    };
-
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -99,20 +80,6 @@ export default function UserTable() {
             console.error('Error adding user:', error);
         }
     };
-
-    const handleSubmitGroup = async (event) => {
-        event.preventDefault();
-        const formDatas = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formDatas as any).entries());
-        try {
-            const response = await axios.post('http://localhost:5000/groups', formJson);
-
-            handleGroupClose();
-        } catch (error) {
-            console.error('Error adding group:', error);
-        }
-    };
-
     const fetchMethodologists = async () => {
         try {
             const response = await axios.get('http://localhost:5000/methodologists');
@@ -214,9 +181,6 @@ export default function UserTable() {
                 <Button variant="solid" color="primary" onClick={handleOpen}>
                     Добавить пользователя
                 </Button>
-                <Button variant="solid" color="primary" onClick={handleGroupOpen}>
-                    Создать группу
-                </Button>
                 </Box>
             </Box>
             <Box
@@ -300,36 +264,6 @@ export default function UserTable() {
                     },
                 }}
             >
-                {/* <Button
-                    size="sm"
-                    variant="outlined"
-                    color="neutral"
-                    startDecorator={<KeyboardArrowLeftIcon />}
-                >
-                    Previous
-                </Button>
-
-                <Box sx={{ flex: 1 }} />
-                {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
-                    <IconButton
-                        key={page}
-                        size="sm"
-                        variant={Number(page) ? 'outlined' : 'plain'}
-                        color="neutral"
-                    >
-                        {page}
-                    </IconButton>
-                ))}
-                <Box sx={{ flex: 1 }} />
-
-                <Button
-                    size="sm"
-                    variant="outlined"
-                    color="neutral"
-                    endDecorator={<KeyboardArrowRightIcon />}
-                >
-                    Next
-                </Button> */}
             </Box>
             <Modal open={open} onClose={handleClose}>
                 <ModalDialog
@@ -392,7 +326,7 @@ export default function UserTable() {
                             <FormControl sx={{ mt: 2 }}>
                                 <FormLabel>Группа</FormLabel>
                                 <Select
-                                    name="group_name"
+                                    name="group_id"
                                     required
                                 >
                                      {groups.map((group) => (
@@ -407,59 +341,6 @@ export default function UserTable() {
                             type="submit"
                             variant="solid"
                             color="primary"
-                            sx={{ mt: 2 }}
-                        >
-                            Сохранить
-                        </Button>
-
-
-                    </form>
-                </ModalDialog>
-            </Modal>
-            <Modal open={openGroup} onClose={handleGroupClose}>
-                <ModalDialog
-                    aria-labelledby="add-user-modal"
-                    aria-describedby="add-user-modal-description"
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '400px',
-                        maxWidth: '100%',
-                    }}
-                >
-                    <ModalClose onClick={handleGroupClose} />
-                    <Typography id="add-user-modal" level="h6" component="h2">
-                        Создать группу
-                    </Typography>
-                    <form onSubmit={handleSubmitGroup}>
-                        <FormControl >
-                            <FormLabel>Наименование группы</FormLabel>
-                            <Input
-                                type="text"
-                                name="groupName"
-                                required
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Методист</FormLabel>
-                            <Select
-                                name="methodologist"
-                                required
-                            >
-                                {methodologists.map((methodologist) => (
-                                    <Option key={methodologist.id} value={methodologist.id}>
-                                        {methodologist.full_name}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <Button
-                            type="submit"
-                            variant="solid"
-                            color="primary"
-
                             sx={{ mt: 2 }}
                         >
                             Сохранить

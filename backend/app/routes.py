@@ -226,8 +226,8 @@ def add_user():
     db_session.commit()
 
     if role_name == 'student':
-        group_name = data.get('group_name')
-        group = Group.query.filter_by(name=group_name).first()
+        group_id = data.get('group_id')
+        group = Group.query.filter_by(id=group_id).first()
         query_id_select = app.security.datastore.find_user(email=new_user.email)
         #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
         if not group:
