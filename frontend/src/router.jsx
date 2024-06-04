@@ -2,16 +2,10 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
 // import Login from "./components/Login/login"
 // import MainPage from "./components/main/mainPage"
 import PageNotFound from "./components/NotFoundPage/pageNotFound"
-import TemplatePage from "./components/template";
 import SignIn from "./components/Login/Login";
 import JoyOrderDashboardTemplate from "./components/main/MainPage";
-import SpravkiPage from "./components/testSpravki/testSpravki";
-import BuildingEditor from "./components/testMap";
-import AddRole from "./components/Roles/AddRole";
-import RoleTable from "./components/Roles/ViewRole";
 import UserTable from "./components/Users/ViewUsers";
 import OrderTable from "./components/OrderTable/OrderTable";
-import MainPage from "./components/main/mainPage (старая функция проверки) ";
 import GroupTable from "./components/Group/ViewGroup";
 import useToken from "./components/useToken/useToken";
 import { Outlet } from "react-router-dom";

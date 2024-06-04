@@ -100,29 +100,25 @@ class User(Base, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True)
-    username = Column(String(255), unique=True, nullable=True)
+    full_name = Column(String, nullable=True)
     password = Column(String(255), nullable=False)
     active = Column(Boolean())
     fs_uniquifier = Column(String(64), unique=True, nullable=False)
+    
     roles = relationship('Role', secondary='roles_users', backref=backref('users', lazy='dynamic'))
-
-    methodologist = relationship('Methodologist', uselist=False, back_populates='user')
+    group = relationship('Group', back_populates='users')
     student = relationship('Student', uselist=False, back_populates='user')
+    dormitoryWorker = relationship('DormitoryWorker', back_populates='user')
 
 class Group(Base):
     __tablename__ = 'group'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    methodologist_id = Column(Integer, ForeignKey('methodologist.id'), nullable=True)
-    methodologist = relationship("Methodologist", back_populates="groups")
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+    
+    users = relationship("User", back_populates="group")
     students = relationship("Student", back_populates="group")
 
-class Methodologist(Base):
-    __tablename__ = 'methodologist'
-    id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
-    full_name = Column(String, nullable=False)
-    user = relationship("User", back_populates="methodologist")
-    groups = relationship("Group", back_populates="methodologist")
 
 class Student(Base):
     __tablename__ = 'student'
@@ -130,6 +126,7 @@ class Student(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
     group = relationship("Group", back_populates="students")
     applications = relationship("Application", back_populates="student")
+    applicationDormitory = relationship("ApplicationDormitory", back_populates="student")
     user = relationship("User", back_populates="student")
 
 class Application(Base):
@@ -141,7 +138,29 @@ class Application(Base):
     status = Column(String, nullable=False)
     date = Column(DateTime, nullable=False, default=datetime.utcnow)
     student = relationship("Student", back_populates="applications")
-
+    
+class DormitoryWorker(Base):
+     __tablename__ = 'dormitoryWorker'
+     id = Column(Integer, primary_key=True)
+     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+     numberDormitory = Column(Integer, nullable=False)
+     typeSpecialist = Column(String, nullable=False)
+     user = relationship("User", back_populates="dormitoryWorker")
+     
+class ApplicationDormitory(Base):
+    __tablename__ = 'applicationDormitory'
+    id = Column(Integer, primary_key=True)
+    personal_number = Column(Integer, ForeignKey('student.user_id'))
+    description = Column(String, nullable=False)
+    typeSpecialist = Column(String, nullable=False)
+    numberDormitory = Column(Integer, nullable=False)
+    address = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    
+    student = relationship("Student", back_populates="applicationDormitory")
+     
+     
 Group.students = relationship("Student", back_populates="group")
 Student.group = relationship("Group", back_populates="students")
 Student.applications = relationship("Application", back_populates="student")

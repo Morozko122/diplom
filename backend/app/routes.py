@@ -7,7 +7,7 @@ from flask_security import auth_required, permissions_accepted, current_user, ha
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies
 from app.decorator import roles_required 
 from app.database import db_session
-from app.models import Application, Methodologist, User, Role, Student, Group
+from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker
 
 jwt = JWTManager(app)
 
@@ -20,7 +20,7 @@ def login():
    user = app.security.datastore.find_user(email=username)
   
    if user and verify_password(password, user.password):
-       access_token = create_access_token(identity=user.username,  additional_claims={"role": user.roles[0].name})
+       access_token = create_access_token(identity=user.full_name,  additional_claims={"role": user.roles[0].name})
        return jsonify(access_token=access_token, user_role=user.roles[0].name, user_id=user.id), 200
    else:
        return jsonify({"msg": "Invalid username or password"}), 401
@@ -31,15 +31,6 @@ def logout():
     unset_jwt_cookies(resp)
     return resp, 200
 
-
-@app.route('/admin1', methods=['GET'])
-@roles_required(*['admin', 'adddmin'])
-def admin_only():
-   current_user = get_jwt_identity()
-   print(current_user)
-   claims = get_jwt()
-  
-   return jsonify({'message': f'This is an admin-only endpoint. Hello, {claims["role"]}!'})
 
 @app.route('/get_spravka/<int:student_code>', methods=['GET'])
 def get_spravka(student_code):
@@ -111,9 +102,12 @@ def update_application(application_id):
 @app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
 @jwt_required()
 def get_applications_for_methodologist(methodologist_id):
-    methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
+    #methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
+   
+    methodologist = User.query.filter_by(id = methodologist_id).all()
     applications = []
-    for group in methodologist[0].groups:
+   
+    for group in methodologist[0].group:
        
         for student in group.students:
             for application in student.applications:
@@ -124,7 +118,7 @@ def get_applications_for_methodologist(methodologist_id):
                     "quantity": application.quantity,
                     "status": application.status,
                     "date": application.date.strftime('%Y-%m-%d %H:%M:%S'),
-                    "full_name": student.user.username
+                    "full_name": student.user.full_name
                 })
 
     return jsonify(applications)
@@ -173,7 +167,7 @@ def get_users():
         {
             'id': user.id,
             'email': user.email,
-            'username': user.username,
+            'username': user.full_name,
             'active': user.active,
             'fs_uniquifier': user.fs_uniquifier,
             'roles': [{'id': role.id, 'name': role.name} for role in user.roles]
@@ -188,7 +182,7 @@ def get_users_id(user_id):
         {
             'id': user.id,
             'email': user.email,
-            'username': user.username,
+            'username': user.full_name,
             'active': user.active,
             'fs_uniquifier': user.fs_uniquifier,
             'roles': [{'id': role.id, 'name': role.name} for role in user.roles]
@@ -212,7 +206,7 @@ def add_user():
 
     new_user = User(
         email=data['email'],
-        username=data['username'],
+        full_name=data['username'],
         password=hash_password(data['password']),
         active=data.get('active', True),
     )
@@ -221,7 +215,7 @@ def add_user():
         email=new_user.email,
         password=new_user.password,
         roles=[role],
-        username = new_user.username
+        full_name = new_user.full_name
     )
     db_session.commit()
 
@@ -235,11 +229,7 @@ def add_user():
 
         new_student = Student(user_id=query_id_select.id, group_id=group.id)
         db_session.add(new_student)
-    elif role_name == 'methodologist':
-        #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
-        query_id_select = app.security.datastore.find_user(email=new_user.email)
-        new_methodologist = Methodologist(id=query_id_select.id, full_name='pohui')
-        db_session.add(new_methodologist)
+
 
     db_session.commit()
 
@@ -254,7 +244,10 @@ def bad_request(error):
 
 @app.route('/methodologists', methods=['GET'])
 def get_methodologists():
-    methodologists = Methodologist.query.all()
+    role = app.security.datastore.find_role('methodologist')
+    role_users = RolesUsers.query.filter_by(role_id = role.id).first()
+    methodologists = User.query.filter_by(id = role_users.user_id).all()
+    
     methodologists_list = [
         {
             'id': methodologist.id,
@@ -270,7 +263,7 @@ def edit_user(user_id):
     data = request.json
     user = User.query.filter_by(id = user_id)
     user.email = data.get('email', user.email)
-    user.username = data.get('username', user.username)
+    user.full_name = data.get('username', user.full_name)
     user.password = data.get('password', user.password)
     user.active = data.get('active', user.active)
     user.fs_uniquifier = data.get('fs_uniquifier', user.fs_uniquifier)
@@ -283,7 +276,7 @@ def add_group():
     data = request.json
     new_group = Group(
         name=data['groupName'],
-        methodologist_id=data['methodologist']
+        user_id=data['methodologist']
     )
     db_session.add(new_group)
     db_session.commit()
@@ -296,9 +289,113 @@ def get_group():
         {
             'id': group.id,
             'name': group.name,
-            'methodologist_id': group.methodologist_id,
-            'methodologist':group.methodologist.full_name
+            'methodologist_id': group.user_id,
+            'methodologist':group.user.full_name
         }
         for group in groups
     ]
     return jsonify(groups_list)
+
+
+# Вспомогательные функции сериализации
+def serialize_worker(worker):
+    return {
+        'id': worker.id,
+        'user_id': worker.user_id,
+        'numberDormitory': worker.numberDormitory,
+        'typeSpecialist': worker.typeSpecialist
+    }
+
+def serialize_application(application):
+    return {
+        'id': application.id,
+        'personal_number': application.personal_number,
+        'description': application.description,
+        'typeSpecialist': application.typeSpecialist,
+        'numberDormitory': application.numberDormitory,
+        'address': application.address,
+        'status': application.status,
+        'date': application.date.isoformat()
+    }
+
+DormitoryWorker.serialize = serialize_worker
+ApplicationDormitory.serialize = serialize_application
+
+# Эндпоинты для DormitoryWorker
+@app.route('/workers', methods=['GET'])
+@app.route('/workers/<int:id>', methods=['GET'])
+def get_workers(id=None):
+    if id:
+        worker = DormitoryWorker.query.get(id)
+        if worker:
+            return jsonify(worker.serialize())
+        return {'message': 'Dormitory Worker not found'}, 404
+    workers = DormitoryWorker.query.all()
+    return jsonify([worker.serialize() for worker in workers])
+
+@app.route('/workers', methods=['POST'])
+def add_worker():
+    data = request.get_json()
+    worker = DormitoryWorker(
+        user_id=data['user_id'],
+        numberDormitory=data['numberDormitory'],
+        typeSpecialist=data['typeSpecialist']
+    )
+    db_session.add(worker)
+    db_session.commit()
+    return jsonify(worker.serialize())
+
+@app.route('/workers/<int:id>', methods=['PUT'])
+def edit_worker(id):
+    data = request.get_json()
+    worker = DormitoryWorker.query.get(id)
+    if not worker:
+        return {'message': 'Dormitory Worker not found'}, 404
+    worker.user_id = data.get('user_id', worker.user_id)
+    worker.numberDormitory = data.get('numberDormitory', worker.numberDormitory)
+    worker.typeSpecialist = data.get('typeSpecialist', worker.typeSpecialist)
+    db_session.commit()
+    return jsonify(worker.serialize())
+
+# Эндпоинты для ApplicationDormitory
+@app.route('/applicationDormitory', methods=['GET'])
+@app.route('/applicationDormitory/<int:id>', methods=['GET'])
+def get_applicationDormitory(id=None):
+    if id:
+        application = ApplicationDormitory.query.get(id)
+        if application:
+            return jsonify(application.serialize())
+        return {'message': 'Application Dormitory not found'}, 404
+    applications = ApplicationDormitory.query.all()
+    return jsonify([app.serialize() for app in applications])
+
+@app.route('/applicationDormitory/add', methods=['POST'])
+def add_applicationDormitory():
+    data = request.get_json()
+    application = ApplicationDormitory(
+        personal_number=data['personal_number'],
+        description=data['description'],
+        typeSpecialist=data['typeSpecialist'],
+        numberDormitory=data['numberDormitory'],
+        address=data['address'],
+        status=data['status'],
+        
+    )
+    db_session.add(application)
+    db_session.commit()
+    return jsonify(application.serialize())
+
+@app.route('/applicationDormitory/<int:id>', methods=['PUT'])
+def edit_applicationDormitory(id):
+    data = request.get_json()
+    application = ApplicationDormitory.query.get(id)
+    if not application:
+        return {'message': 'Application Dormitory not found'}, 404
+    application.personal_number = data.get('personal_number', application.personal_number)
+    application.description = data.get('description', application.description)
+    application.typeSpecialist = data.get('typeSpecialist', application.typeSpecialist)
+    application.numberDormitory = data.get('numberDormitory', application.numberDormitory)
+    application.address = data.get('address', application.address)
+    application.status = data.get('status', application.status)
+    db_session.commit()
+    return jsonify(application.serialize())
