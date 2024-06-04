@@ -183,13 +183,13 @@ export default function Sidebar({ role, removeToken }) {
                       </ListItemContent>
                     </ListItemButton>
                   </Link>
-                  {/* <Link to="/main/roles">
+                  <Link to="/main/roles">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Роли</Typography>
                       </ListItemContent>
                     </ListItemButton>
-                  </Link> */}
+                  </Link>
                   <Link to="/main/groups">
                     <ListItemButton>
                       <ListItemContent>
