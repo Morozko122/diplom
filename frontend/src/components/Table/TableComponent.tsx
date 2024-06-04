@@ -28,12 +28,12 @@ interface TableComponentProps {
   selected: readonly string[];
   setSelected: React.Dispatch<React.SetStateAction<readonly string[]>>;
   token: string;
-  fetchSpravki: any;
+  fetchApplication: any;
   userId: number;
 }
 
 
-const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token, fetchSpravki, userId}) => {
+const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token, fetchApplication: fetchSpravki, userId}) => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -48,8 +48,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
           'Content-Type': `application/json`
         },
         "status":newStatus
-        
-        
       });
       handleCloseEdit();
       fetchSpravki(userId);

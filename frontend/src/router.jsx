@@ -14,6 +14,7 @@ import OrderTable from "./components/OrderTable/OrderTable";
 import MainPage from "./components/main/mainPage (старая функция проверки) ";
 import GroupTable from "./components/Group/ViewGroup";
 import useToken from "./components/useToken/useToken";
+import { Outlet } from "react-router-dom";
 
 
 
@@ -21,59 +22,36 @@ function ProtectedRoute({ token, role, requiredRoles, children }) {
   if (!token || token === "" || token === undefined) {
     return <Navigate to="/login" replace />;
   }
-
   if (requiredRoles && !requiredRoles.includes(role)) {
-    return <Navigate to="/adsad" replace />;
+    return <Navigate to="/pageNotFound" replace />;
   }
-
   return children;
 }
-
-
 
 function Router() {
   const { token, role, setRole, removeToken, setToken, setId } = useToken();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<TemplatePage />}>
-          <Route path="login" element={!token ? <SignIn setToken={setToken} setRole={setRole} setId={setId} /> : <Navigate to="/main" replace />} />
-          <Route
-            path="main"
+        <Route path="/" element={<Outlet/>}>
+          <Route path="login" element={!token ? <SignIn setToken={setToken} setRole={setRole} setId={setId} />
+           : <Navigate to="/main" replace />} />
+          <Route path="main"
             element={
               <ProtectedRoute token={token} role={role}>
                 <JoyOrderDashboardTemplate role={role} removeToken={removeToken} />
-              </ProtectedRoute>
-            }
-          >
+              </ProtectedRoute>}>
             <Route index element={<OrderTable token={token} />} />
-            <Route
-              path="roles"
-              element={
-                <ProtectedRoute token={token} role={role} requiredRoles={['admin']}>
-                  <RoleTable token={token} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="groups"
+            <Route path="groups"
               element={
                 <ProtectedRoute token={token} role={role} requiredRoles={['admin']}>
                   <GroupTable token={token} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="users"
+                </ProtectedRoute>}/>
+            <Route path="users"
               element={
                 <ProtectedRoute token={token} role={role} requiredRoles={['admin']}>
                   <UserTable token={token} />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-          <Route path="test" element={<MainPage />} />
-        </Route>
+                </ProtectedRoute>}/></Route></Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>

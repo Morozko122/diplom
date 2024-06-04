@@ -50,8 +50,7 @@ export default function UserTable() {
     const [formData, setFormData] = useState({
         role: '',
     });
-
-    const [methodologists, setMethodologists] = useState([]);
+    
     const [groups, setGroups] = useState([]);
 
 
@@ -74,18 +73,9 @@ export default function UserTable() {
             const response = await axios.post('http://localhost:5000/users', formJson);
             console.log(response.data);
             fetchUser();
-            fetchMethodologists();
             handleClose();
         } catch (error) {
             console.error('Error adding user:', error);
-        }
-    };
-    const fetchMethodologists = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/methodologists');
-            setMethodologists(response.data);
-        } catch (error) {
-            console.error('Error fetching methodologists:', error);
         }
     };
     
@@ -110,7 +100,6 @@ export default function UserTable() {
 
     React.useEffect(() => {
         fetchUser();
-        fetchMethodologists();
         fetchGroups();
     }, []);
 

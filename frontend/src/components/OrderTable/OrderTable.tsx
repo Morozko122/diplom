@@ -394,11 +394,9 @@ import useToken from '../useToken/useToken';
 export default function OrderTable({ token }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [rows, setRow] = React.useState([]);
+
   const userId = localStorage.getItem('user_id');
-
-
-
-  const fetchSpravki = async (id) => {
+  const fetchApplication = async (id) => {
     try {
       const response = await axios.get(`http://localhost:5000/methodologists/${id}/applications`, {
         headers:
@@ -415,7 +413,7 @@ export default function OrderTable({ token }) {
   };
 
   React.useEffect(() => {
-    fetchSpravki(userId);
+    fetchApplication(userId);
   }, []);
 
   const renderFilters = () => (
@@ -519,7 +517,7 @@ export default function OrderTable({ token }) {
           selected={selected}
           setSelected={setSelected}
           token={token}
-          fetchSpravki={fetchSpravki}
+          fetchApplication={fetchApplication}
           userId={Number(userId)}
         />
       </Sheet>
