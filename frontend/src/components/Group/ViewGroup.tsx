@@ -42,7 +42,7 @@ export default function GroupTable() {
         const formDatas = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formDatas as any).entries());
         try {
-            const response = await axios.post('http://localhost:5000/groups', formJson);
+            await axios.post('http://localhost:5000/groups', formJson);
 
             handleGroupClose();
             fetchGroups();

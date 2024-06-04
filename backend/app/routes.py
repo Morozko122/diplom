@@ -227,12 +227,30 @@ def add_user():
 
         new_student = Student(user_id=query_id_select.id, group_id=group.id)
         db_session.add(new_student)
-
+    elif role_name == 'hostel-employee':
+        query_id_select = app.security.datastore.find_user(email=new_user.email)
+        worker = DormitoryWorker(
+        user_id=query_id_select.id,
+        numberDormitory=data['numberDormitory'],
+        typeSpecialist=data['typeSpecialist']
+        )
+        db_session.add(worker)
 
     db_session.commit()
 
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
-
+#
+def add_worker():
+    data = request.get_json()
+    worker = DormitoryWorker(
+        user_id=data['user_id'],
+        numberDormitory=data['numberDormitory'],
+        typeSpecialist=data['typeSpecialist']
+    )
+    db_session.add(worker)
+    db_session.commit()
+    return jsonify(worker.serialize())
+#
 @app.errorhandler(400)
 def bad_request(error):
     response = jsonify({"error": "Bad request", "message": str(error)})
