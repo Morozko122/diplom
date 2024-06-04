@@ -183,8 +183,6 @@ def get_users_id(user_id):
             'id': user.id,
             'email': user.email,
             'username': user.full_name,
-            'active': user.active,
-            'fs_uniquifier': user.fs_uniquifier,
             'roles': [{'id': role.id, 'name': role.name} for role in user.roles]
         }
         for user in users

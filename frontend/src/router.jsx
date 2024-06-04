@@ -10,9 +10,12 @@ import GroupTable from "./components/Group/ViewGroup";
 import useToken from "./components/useToken/useToken";
 import { Outlet } from "react-router-dom";
 
-
+const keys = [
+  'access_token', 'user_role', 'user_id'
+]
 
 function ProtectedRoute({ token, role, requiredRoles, children }) {
+  console.log(token);
   if (!token || token === "" || token === undefined) {
     return <Navigate to="/login" replace />;
   }
@@ -23,28 +26,28 @@ function ProtectedRoute({ token, role, requiredRoles, children }) {
 }
 
 function Router() {
-  const { token, role, setRole, removeToken, setToken, setId } = useToken();
+  const { data, removeData, setData} = useToken(keys);
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Outlet/>}>
-          <Route path="login" element={!token ? <SignIn setToken={setToken} setRole={setRole} setId={setId} />
+          <Route path="login" element={!data.access_token ? <SignIn setData={setData} />
            : <Navigate to="/main" replace />} />
           <Route path="main"
             element={
-              <ProtectedRoute token={token} role={role}>
-                <JoyOrderDashboardTemplate role={role} removeToken={removeToken} />
+              <ProtectedRoute token={data.access_token} role={data.user_role}>
+                <JoyOrderDashboardTemplate role={data.user_role} removeData={removeData} />
               </ProtectedRoute>}>
-            <Route index element={<OrderTable token={token} />} />
+            <Route index element={<OrderTable token={data['access_token']} />} />
             <Route path="groups"
               element={
-                <ProtectedRoute token={token} role={role} requiredRoles={['admin']}>
-                  <GroupTable token={token} />
+                <ProtectedRoute token={data['access_token']} role={data['user_role']} requiredRoles={['admin']}>
+                  <GroupTable token={data['access_token']} />
                 </ProtectedRoute>}/>
             <Route path="users"
               element={
-                <ProtectedRoute token={token} role={role} requiredRoles={['admin']}>
-                  <UserTable token={token} />
+                <ProtectedRoute token={data['access_token']} role={data['user_role']} requiredRoles={['admin']}>
+                  <UserTable token={data['access_token']} />
                 </ProtectedRoute>}/></Route></Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
@@ -53,25 +56,3 @@ function Router() {
 }
 
 export default Router
-
-
-
-
-
-
-// <BrowserRouter>
-//    <Routes>
-//       <Route path="/" element={<TemplatePage />}>
-//          {!token && token !== "" && token !== undefined ?
-//             <Route path="login" element={<SignIn setToken={setToken} setRole={setRole} />} /> : (
-//                <Route path="main" element={<JoyOrderDashboardTemplate removeToken={removeToken} />} >
-//                   <Route index element={<OrderTable token={token} />} />
-//                   <Route path="roles" element={<RoleTable token={token} />} />
-//                   <Route path="users" element={<UserTable token={token} />} />
-//                </Route>
-//          )}
-//          <Route path="test" element={<MainPage />} />
-//       </Route>
-//       <Route element={<PageNotFound />} path="*" />
-//    </Routes>
-// </BrowserRouter>

@@ -35,7 +35,6 @@ const login = async (username, password) => {
       username,
       password
     });
-    // const { access_token, user_role } = response.data;
     return response.data;
   } catch (error) {
     console.error('Error logging:', error);
@@ -43,6 +42,15 @@ const login = async (username, password) => {
   }
 };
 
+const fetchCurrentUser = async (id) => {
+  try {
+      const response = await axios.get(`http://localhost:5000/users/${id}`);
+      return response.data;
+  } catch (error) {
+      console.error('Error fetching spravki:', error);
+      throw error;
+  }
+};
 
 function ColorSchemeToggle(props: IconButtonProps) {
   const { onClick, ...other } = props;
@@ -69,7 +77,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-export default function SignIn({setToken, setRole, setId}) {
+export default function SignIn({setToken, setRole, setId, setData, keys}) {
   const navigate = useNavigate();
   return (
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange>
@@ -78,7 +86,7 @@ export default function SignIn({setToken, setRole, setId}) {
         styles={{
           ':root': {
             '--Form-maxWidth': '800px',
-            '--Transition-duration': '0.4s', // set to `none` to disable transition
+            '--Transition-duration': '0.4s',
           },
         }}
       />
@@ -171,9 +179,9 @@ export default function SignIn({setToken, setRole, setId}) {
                   try {
                     login(data.username, data.password)
                         .then(data => {
-                            setToken(data);
-                            setRole(data);
-                            setId(data);
+                            setData('access_token', data);
+                            setData('user_role', data);
+                            setData('user_id', data);
                             navigate('/main');
                         }
                         )
