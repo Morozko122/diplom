@@ -25,24 +25,7 @@ import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
 import Divider from '@mui/joy/Divider';
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
-
-function RowMenu() {
-    return (
-        <Dropdown>
-            <MenuButton
-                slots={{ root: IconButton }}
-                slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-            >
-                <MoreHorizRoundedIcon />
-            </MenuButton>
-            <Menu size="sm" sx={{ minWidth: 140 }}>
-                <MenuItem>Изменить</MenuItem>
-                <Divider />
-                <MenuItem color="danger">Delete</MenuItem>
-            </Menu>
-        </Dropdown>
-    );
-}
+import CustomTable from '../Table/CustomTableComponents';
 
 export default function GroupTable() {
     const [rows, setRow] = useState([]);
@@ -130,7 +113,12 @@ export default function GroupTable() {
             </FormControl>
         </React.Fragment>
     );
-
+    const columns = [
+        { field: 'id', title: 'ID' },
+        { field: 'name', title: 'Название' },
+        { field: 'methodologist_id', title: 'ID работника' },
+        { field: 'methodologist', title: 'ФИО работника' },
+    ];
     return (
         <React.Fragment>
             <Box
@@ -176,64 +164,7 @@ export default function GroupTable() {
             >
                 {/* {renderFilters()} */}
             </Box>
-            <Sheet
-                className="OrderTableContainer"
-                variant="outlined"
-                sx={{
-                    display: { xs: 'none', sm: 'initial' },
-                    width: '100%',
-                    borderRadius: 'sm',
-                    flexShrink: 1,
-                    overflow: 'auto',
-                    minHeight: 0,
-                }}
-            >
-                <Table
-                    aria-labelledby="tableTitle"
-                    stickyHeader
-                    hoverRow
-                    sx={{
-                        '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
-                        '--Table-headerUnderlineThickness': '1px',
-                        '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
-                        '--TableCell-paddingY': '4px',
-                        '--TableCell-paddingX': '8px',
-                    }}
-                >
-                    <thead>
-                        <tr>
-                            <th style={{ width: 120, padding: '12px 6px' }}>ID</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>Название</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>ID работника</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>ФИО работника</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {groups.map((row) => (
-                            <tr key={row.id}>
-                                <td>
-                                    <Typography level="body-xs">{row.id}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.name}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.methodologist_id}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.methodologist}</Typography>
-                                </td>
-                                <td>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                        <RowMenu />
-                                    </Box>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Sheet>
+            <CustomTable columns={columns} data={groups}/>
             <Box
                 className="Pagination-laptopUp"
                 sx={{

@@ -290,7 +290,7 @@ def get_group():
             'id': group.id,
             'name': group.name,
             'methodologist_id': group.user_id,
-            'methodologist':group.user.full_name
+            'methodologist':group.users.full_name
         }
         for group in groups
     ]

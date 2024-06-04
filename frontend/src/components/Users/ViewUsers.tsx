@@ -25,6 +25,7 @@ import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
 import Divider from '@mui/joy/Divider';
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
+import CustomTable from '../Table/CustomTableComponents';
 
 function RowMenu() {
     return (
@@ -141,7 +142,11 @@ export default function UserTable() {
             </FormControl>
         </React.Fragment>
     );
-
+    const columns = [
+        { field: 'id', title: 'ID' },
+        { field: 'email', title: 'Почта' },
+        { field: 'username', title: 'Имя пользователя' },
+    ];
     return (
         <React.Fragment>
             <Box
@@ -187,60 +192,7 @@ export default function UserTable() {
             >
                 {/* {renderFilters()} */}
             </Box>
-            <Sheet
-                className="OrderTableContainer"
-                variant="outlined"
-                sx={{
-                    display: { xs: 'none', sm: 'initial' },
-                    width: '100%',
-                    borderRadius: 'sm',
-                    flexShrink: 1,
-                    overflow: 'auto',
-                    minHeight: 0,
-                }}
-            >
-                <Table
-                    aria-labelledby="tableTitle"
-                    stickyHeader
-                    hoverRow
-                    sx={{
-                        '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
-                        '--Table-headerUnderlineThickness': '1px',
-                        '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
-                        '--TableCell-paddingY': '4px',
-                        '--TableCell-paddingX': '8px',
-                    }}
-                >
-                    <thead>
-                        <tr>
-                            <th style={{ width: 120, padding: '12px 6px' }}>Id</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>Почта</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}>Имя пользователя</th>
-                            <th style={{ width: 140, padding: '12px 6px' }}> </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((row) => (
-                            <tr key={row.id}>
-                                <td>
-                                    <Typography level="body-xs">{row.id}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.email}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.username}</Typography>
-                                </td>
-                                <td>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                        <RowMenu />
-                                    </Box>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Sheet>
+            <CustomTable columns={columns} data={rows}/>
             <Box
                 className="Pagination-laptopUp"
                 sx={{
