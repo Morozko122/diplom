@@ -326,6 +326,27 @@ export default function UserTable() {
                                 </Select>
                             </FormControl>
                         )}
+                         {formData.role === 'hostel-employee' && (
+                            <>
+                            <FormControl sx={{ mt: 2 }}>
+                            <FormLabel>Номер общежития</FormLabel>
+                            <Input
+                                type="text"
+                                name="numberDormitory"
+                                required
+                            />
+                        </FormControl>
+                        <FormControl sx={{ mt: 2 }}>
+                            <FormLabel>Тип специалиста</FormLabel>
+                            <Input
+                                type="text"
+                                name="typeSpecialist"
+                                required
+                            />
+                        </FormControl></>
+                          
+                       
+                        )}
                         <Button
                             type="submit"
                             variant="solid"
