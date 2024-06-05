@@ -30,10 +30,11 @@ interface TableComponentProps {
   token: string;
   fetchApplication: any;
   userId: number;
+  role: any
 }
 
 
-const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token, fetchApplication: fetchSpravki, userId}) => {
+const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected, setSelected, token, fetchApplication: fetchSpravki, userId, role}) => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);

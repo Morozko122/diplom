@@ -192,7 +192,7 @@ export default function UserTable() {
             >
                 {/* {renderFilters()} */}
             </Box>
-            <CustomTable columns={columns} data={rows}/>
+            <CustomTable columns={columns} data={rows} typeTable={"admin"}/>
             <Box
                 className="Pagination-laptopUp"
                 sx={{

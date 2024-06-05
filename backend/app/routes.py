@@ -103,6 +103,7 @@ def update_application(application_id):
 
     return jsonify({"message": "Application updated successfully"})
 
+
 @app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
 @jwt_required()
 def get_applications_for_methodologist(methodologist_id):
@@ -376,6 +377,22 @@ def edit_worker(id):
     worker.typeSpecialist = data.get('typeSpecialist', worker.typeSpecialist)
     db_session.commit()
     return jsonify(worker.serialize())
+
+@app.route('/workers/<int:id>/applications', methods=['GET'])
+def get_worker_app(id):
+    worker = DormitoryWorker.query.filter_by(user_id = id).first()
+    if not worker:
+        return {'message': 'Dormitory Worker not found'}, 404
+    
+    listApp = ApplicationDormitory.query.filter_by(typeSpecialist =worker.typeSpecialist , numberDormitory =worker.numberDormitory).all()
+    if listApp:
+        applications = []
+        for app in listApp:
+            applications.append(app.serialize())
+        return jsonify(applications)
+    return {'message': 'Application Dormitory not found'}, 404
+    
+    
 
 # Эндпоинты для ApplicationDormitory
 @app.route('/applicationDormitory', methods=['GET'])

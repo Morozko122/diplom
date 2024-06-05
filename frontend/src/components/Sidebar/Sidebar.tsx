@@ -151,7 +151,7 @@ export default function Sidebar({ role, removeData }) {
           <ListItem>
             <ListItemButton selected>
               <AssignmentRoundedIcon />
-              <Link to="/main">
+              <Link to="/">
               <ListItemContent>
                 
                   <Typography level="title-sm">Заказы</Typography>
@@ -176,7 +176,7 @@ export default function Sidebar({ role, removeData }) {
                 )}
               >
                 <List sx={{ gap: 0.5 }}>
-                  <Link to="/main/users">
+                  <Link to="/users">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Пользователи</Typography>
@@ -190,7 +190,7 @@ export default function Sidebar({ role, removeData }) {
                       </ListItemContent>
                     </ListItemButton>
                   </Link> */}
-                  <Link to="/main/groups">
+                  <Link to="/groups">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Группы</Typography>
