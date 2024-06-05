@@ -170,7 +170,7 @@ export default function SignIn({ setToken, setRole, setId, setData, keys }) {
               <form
                 onSubmit={(event: React.FormEvent<SignInFormElement>) => {
                   event.preventDefault();
-                  redirect('/main');
+                  redirect('/');
                   const formElements = event.currentTarget.elements;
                   const data = {
                     username: formElements.username.value,
@@ -191,7 +191,7 @@ export default function SignIn({ setToken, setRole, setId, setData, keys }) {
                               setData('full_name', user_data)
                             }
                           )
-                        navigate('/main');
+                        navigate('/');
                       }
                       )
                       .catch(error => {

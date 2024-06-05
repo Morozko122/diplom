@@ -107,7 +107,7 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Link to="/main">
+        <Link to="/">
           <IconButton variant="soft" color="primary" size="sm">
             <BrightnessAutoRoundedIcon />
           </IconButton>
@@ -140,7 +140,7 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
           <ListItem>
             <ListItemButton selected>
               <AssignmentRoundedIcon />
-              <Link to="/main">
+              <Link to="/">
               <ListItemContent>
                 
                   <Typography level="title-sm">Заказы</Typography>
@@ -165,7 +165,7 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
                 )}
               >
                 <List sx={{ gap: 0.5 }}>
-                  <Link to="/main/users">
+                  <Link to="/users">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Пользователи</Typography>
@@ -179,7 +179,7 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
                       </ListItemContent>
                     </ListItemButton>
                   </Link> */}
-                  <Link to="/main/groups">
+                  <Link to="/groups">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Группы</Typography>
