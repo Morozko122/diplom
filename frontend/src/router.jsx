@@ -9,7 +9,7 @@ import useToken from "./components/useToken/useToken";
 import { Outlet } from "react-router-dom";
 
 const keys = [
-  'access_token', 'user_role', 'user_id'
+  'access_token', 'user_role', 'user_id', 'email', 'full_name'
 ]
 
 function ProtectedRoute({ token, role, requiredRoles, children}) {
@@ -33,7 +33,7 @@ function Router() {
           <Route path="main"
             element={
               <ProtectedRoute token={data.access_token} role={data.user_role}>
-                <JoyOrderDashboardTemplate role={data.user_role} removeData={removeData}/>
+                <JoyOrderDashboardTemplate user_full_name = {data.full_name} user_email = {data.email} role={data.user_role} removeData={removeData}/>
               </ProtectedRoute>}>
             <Route index element={<OrderTable token={data['access_token']} />} />
             <Route path="groups"
