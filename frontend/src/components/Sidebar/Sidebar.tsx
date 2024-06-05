@@ -53,18 +53,7 @@ function Toggler({
     </React.Fragment>
   );
 }
-// const logout = async () => {
-//   try {
-//     const response = await axios.post(`http://localhost:5000/logout`, {headers: 
-//     {
-//       'Authorization': `Bearer ${token}`, 
-//       'Content-Type': `application/json`
-//     }});
-//   } catch (error) {
-//     console.error('Error fetching spravki:', error);
-//   }
-// };
-export default function Sidebar({ role, removeData }) {
+export default function Sidebar({ role, removeData, user_email, user_full_name }) {
   return (
     <Sheet
       className="Sidebar"
@@ -118,7 +107,7 @@ export default function Sidebar({ role, removeData }) {
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Link to="/main">
+        <Link to="/">
           <IconButton variant="soft" color="primary" size="sm">
             <BrightnessAutoRoundedIcon />
           </IconButton>
@@ -220,8 +209,8 @@ export default function Sidebar({ role, removeData }) {
       <Divider />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Иванов И.И.</Typography>
-          <Typography level="body-xs">ivanovii@test.com</Typography>
+          <Typography level="title-sm" noWrap >{user_full_name}</Typography>
+          <Typography level="body-xs" noWrap >{user_email}</Typography>
         </Box>
         <IconButton size="sm" variant="plain" color="neutral" onClick={() => removeData()}>
           <LogoutRoundedIcon />

@@ -182,16 +182,14 @@ def get_users():
     return jsonify(users_list)
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_users_id(user_id):
-    users = User.query.filter_by(id = user_id)
-    users_list = [
-        {
-            'id': user.id,
-            'email': user.email,
-            'username': user.full_name,
-            'roles': [{'id': role.id, 'name': role.name} for role in user.roles]
-        }
-        for user in users
-    ]
+    users = User.query.filter_by(id = user_id).first()
+    users_list = {
+        'id': users.id,
+        'email': users.email,
+        'full_name': users.full_name,
+        'roles': [{'id': role.id, 'name': role.name} for role in users.roles]
+    }
+        
     return jsonify(users_list)
 
 @app.route('/users', methods=['POST'])

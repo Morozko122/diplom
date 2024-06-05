@@ -44,11 +44,12 @@ const login = async (username, password) => {
 
 const fetchCurrentUser = async (id) => {
   try {
-      const response = await axios.get(`http://localhost:5000/users/${id}`);
-      return response.data;
+    console.log(id);
+    const response = await axios.get(`http://localhost:5000/users/${id}`);
+    return response.data;
   } catch (error) {
-      console.error('Error fetching spravki:', error);
-      throw error;
+    console.error('Error fetching spravki:', error);
+    throw error;
   }
 };
 
@@ -56,7 +57,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   const { onClick, ...other } = props;
   const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = React.useState(false);
-  
+
 
   React.useEffect(() => setMounted(true), []);
 
@@ -77,7 +78,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-export default function SignIn({setToken, setRole, setId, setData, keys}) {
+export default function SignIn({ setToken, setRole, setId, setData, keys }) {
   const navigate = useNavigate();
   return (
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange>
@@ -169,7 +170,7 @@ export default function SignIn({setToken, setRole, setId, setData, keys}) {
               <form
                 onSubmit={(event: React.FormEvent<SignInFormElement>) => {
                   event.preventDefault();
-                  redirect('/main');
+                  redirect('/');
                   const formElements = event.currentTarget.elements;
                   const data = {
                     username: formElements.username.value,
@@ -178,23 +179,29 @@ export default function SignIn({setToken, setRole, setId, setData, keys}) {
                   };
                   try {
                     login(data.username, data.password)
-                        .then(data => {
-                            setData('access_token', data);
-                            setData('user_role', data);
-                            setData('user_id', data);
-                            navigate('/main');
-                        }
-                        )
-                        .catch(error => {
-                            console.error('Ошибка авторизации:', error);
-                        });
-                      
+                      .then(data => {
+                        setData('access_token', data);
+                        setData('user_role', data);
+                        setData('user_id', data);
+                        console.log(data);
+                        fetchCurrentUser(data["user_id"])
+                          .then(user_data => {
+                            console.log(user_data);
+                              setData('email', user_data);
+                              setData('full_name', user_data)
+                            }
+                          )
+                        navigate('/');
+                      }
+                      )
+                      .catch(error => {
+                        console.error('Ошибка авторизации:', error);
+                      });
+
                   } catch (error) {
                     console.error(error);
                   }
-                  
                 }
-                
                 }
               >
                 <FormControl required>
