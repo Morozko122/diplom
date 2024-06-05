@@ -1,6 +1,4 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
-// import Login from "./components/Login/login"
-// import MainPage from "./components/main/mainPage"
 import PageNotFound from "./components/NotFoundPage/pageNotFound"
 import SignIn from "./components/Login/Login";
 import JoyOrderDashboardTemplate from "./components/main/MainPage";
@@ -14,8 +12,7 @@ const keys = [
   'access_token', 'user_role', 'user_id'
 ]
 
-function ProtectedRoute({ token, role, requiredRoles, children }) {
-  console.log(token);
+function ProtectedRoute({ token, role, requiredRoles, children}) {
   if (!token || token === "" || token === undefined) {
     return <Navigate to="/login" replace />;
   }
@@ -36,7 +33,7 @@ function Router() {
           <Route path="main"
             element={
               <ProtectedRoute token={data.access_token} role={data.user_role}>
-                <JoyOrderDashboardTemplate role={data.user_role} removeData={removeData} />
+                <JoyOrderDashboardTemplate role={data.user_role} removeData={removeData}/>
               </ProtectedRoute>}>
             <Route index element={<OrderTable token={data['access_token']} />} />
             <Route path="groups"
