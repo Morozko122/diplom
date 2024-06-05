@@ -2,12 +2,14 @@ import { useState } from 'react';
 
 function useToken(keys_array) {
   const [data, setData] = useState(getDefault(keys_array));
-  const xeyak = {};
+
   function save(data_key, data) {
  
     localStorage.setItem(data_key, data[data_key]);
-    xeyak[data_key] = data;
-    setData(xeyak);
+     setData(prevData => ({
+        ...prevData,
+        [data_key]: data[data_key]
+    }));
   }
   
   function getDefault() {
