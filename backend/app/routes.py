@@ -8,6 +8,10 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from app.decorator import roles_required 
 from app.database import db_session
 from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker
+import pyqrcode
+import io
+from PIL import Image
+from flask import Flask, request, jsonify, send_file
 
 jwt = JWTManager(app)
 
@@ -415,3 +419,17 @@ def edit_applicationDormitory(id):
     application.status = data.get('status', application.status)
     db_session.commit()
     return jsonify(application.serialize())
+
+
+
+@app.route('/generate_qr', methods=['GET'])
+def generate_qr():
+    user_id = request.args.get('user_id')
+    
+    
+    qr_code = pyqrcode.create(user_id)
+    buffer = io.BytesIO()
+    qr_code.png(buffer, scale=5)
+    buffer.seek(0)
+
+    return send_file(buffer, mimetype='image/png')
