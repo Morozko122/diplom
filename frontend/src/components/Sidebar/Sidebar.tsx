@@ -64,7 +64,7 @@ function Toggler({
 //     console.error('Error fetching spravki:', error);
 //   }
 // };
-export default function Sidebar({ role, removeToken }) {
+export default function Sidebar({ role, removeData }) {
   return (
     <Sheet
       className="Sidebar"
@@ -183,13 +183,13 @@ export default function Sidebar({ role, removeToken }) {
                       </ListItemContent>
                     </ListItemButton>
                   </Link>
-                  <Link to="/main/roles">
+                  {/* <Link to="/main/roles">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Роли</Typography>
                       </ListItemContent>
                     </ListItemButton>
-                  </Link>
+                  </Link> */}
                   <Link to="/main/groups">
                     <ListItemButton>
                       <ListItemContent>
@@ -223,7 +223,7 @@ export default function Sidebar({ role, removeToken }) {
           <Typography level="title-sm">Иванов И.И.</Typography>
           <Typography level="body-xs">ivanovii@test.com</Typography>
         </Box>
-        <IconButton size="sm" variant="plain" color="neutral" onClick={() => removeToken()}>
+        <IconButton size="sm" variant="plain" color="neutral" onClick={() => removeData()}>
           <LogoutRoundedIcon />
         </IconButton>
       </Box>
