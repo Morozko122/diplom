@@ -4,14 +4,15 @@ from flask_cors import cross_origin
 from flask import jsonify, render_template
 from flask import render_template_string
 from flask_security import auth_required, permissions_accepted, current_user, hash_password, verify_password
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies, verify_jwt_in_request
 from app.decorator import roles_required 
 from app.database import db_session
-from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker
+from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker, StudentInDormitory
 import pyqrcode
 import io
 from PIL import Image
 from flask import Flask, request, jsonify, send_file
+from datetime import timedelta
 
 jwt = JWTManager(app)
 
@@ -24,7 +25,7 @@ def login():
    user = app.security.datastore.find_user(email=username)
   
    if user and verify_password(password, user.password):
-       access_token = create_access_token(identity=user.full_name,  additional_claims={"role": user.roles[0].name})
+       access_token = create_access_token(identity=user.full_name,  additional_claims={"role": user.roles[0].name}, expires_delta=timedelta(hours=5))
        return jsonify(access_token=access_token, user_role=user.roles[0].name, user_id=user.id), 200
    else:
        return jsonify({"msg": "Invalid username or password"}), 401
@@ -78,6 +79,7 @@ def edit_role(role_id):
 #______________Users_____________________#
 
 @app.route('/users', methods=['GET'])
+@jwt_required()
 def get_users():
     users = User.query.all()
     users_list = [
@@ -94,6 +96,7 @@ def get_users():
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
 def get_users_id(user_id):
     users = User.query.filter_by(id = user_id).first()
     users_list = {
@@ -106,6 +109,7 @@ def get_users_id(user_id):
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>/fullinfo', methods=['GET'])
+@jwt_required()
 def get_users_id_full_info(user_id):
     users = User.query.filter_by(id = user_id).first()
     
@@ -126,6 +130,7 @@ def get_users_id_full_info(user_id):
     return jsonify(users_list)
 
 @app.route('/users', methods=['POST'])
+@jwt_required()
 def add_user():
     data = request.json
     role_name = data.get('role')
@@ -177,6 +182,7 @@ def add_user():
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
 
 @app.route('/users/<int:user_id>/full', methods=['PUT'])
+@jwt_required()
 def edit_user_full(user_id):
     data = request.json
     
@@ -197,6 +203,7 @@ def edit_user_full(user_id):
     return jsonify({"message": "User updated", "user": existing_user.email})
 
 @app.route('/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
 def edit_user(user_id):
     data = request.json
     user = User.query.filter_by(id = user_id)
@@ -471,17 +478,33 @@ def get_group():
 #___________________________________#
 
 
-@app.route('/generate_qr', methods=['GET'])
-def generate_qr():
-    user_id = request.args.get('user_id')
+@app.route('/generate_qr/<int:id>', methods=['GET'])
+def generate_qr(id):
     
-    
-    qr_code = pyqrcode.create(user_id)
-    buffer = io.BytesIO()
-    qr_code.png(buffer, scale=5)
-    buffer.seek(0)
+    student = Student.query.get(id)
+    studentInDormitory= student.studentInDormitory
+    if(student !=None and student.liveInDormitory):
+        access_token = create_access_token(identity=student.user_id ,additional_claims={"numberDormitory": studentInDormitory.numberDormitory , "numberRoom": studentInDormitory.numberRoom}, expires_delta=timedelta(seconds=120))
+        return jsonify(access_token_dormitory=access_token), 200
+        
+    return {'message': 'В доступе отказано'}, 401
 
-    return send_file(buffer, mimetype='image/png')
+@jwt_required()
+@app.route('/enter_dormitory', methods=['GET'])
+def enter_dormitory():
+    verify_jwt_in_request()
+    id = get_jwt_identity()
+    claims = get_jwt()
+    if "numberDormitory" in claims and "numberRoom" in claims:
+        numberDormitory = claims["numberDormitory"]
+        numberRoom = claims["numberRoom"]
+        student = StudentInDormitory.query.get(id)
+        if (student.numberDormitory ==numberDormitory and student.numberRoom == numberRoom ):
+            return {"enter": True}
+        else: return {"enter": False}
+        
+    return {'message': 'Ошибка входа'}, 401
+
 
 
 @app.errorhandler(400)

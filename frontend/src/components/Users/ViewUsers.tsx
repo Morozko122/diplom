@@ -49,7 +49,16 @@ const instance = axios.create({
     timeout: 1000,
     
   });
-export default function UserTable() {
+
+
+export default function UserTable({token}) {
+    const headers = {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `application/json`
+        }
+      }
     const [rows, setRow] = useState([]);
     const [formData, setFormData] = useState({
 
@@ -110,7 +119,7 @@ export default function UserTable() {
 
     const fetchGroups = async () => {
         try {
-            const response = await instance.get('http://localhost:5000/groups');
+            const response = await instance.get('http://localhost:5000/groups', headers);
             setGroups(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
@@ -119,7 +128,7 @@ export default function UserTable() {
 
     const fetchUser = async () => {
         try {
-            const response = await instance.get('http://localhost:5000/users');
+            const response = await instance.get('http://localhost:5000/users',headers);
             setRow(response.data);
         } catch (error) {
             console.error('Error fetching spravki:', error);
@@ -128,7 +137,7 @@ export default function UserTable() {
     };
     const fetchUserFullInfo = async (id) => {
         try {
-            const response = await instance.get(`http://localhost:5000/users/${id}/fullinfo`);
+            const response = await instance.get(`http://localhost:5000/users/${id}/fullinfo`, headers);
             setFormData(response.data);
         } catch (error) {
             console.error('Error fetching spravki:', error);

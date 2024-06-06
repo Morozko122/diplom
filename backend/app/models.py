@@ -124,10 +124,19 @@ class Student(Base):
     __tablename__ = 'student'
     group_id = Column(Integer, ForeignKey('group.id'))
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
+    liveInDormitory = Column(Boolean, nullable=False)
     group = relationship("Group", back_populates="students")
     applications = relationship("Application", back_populates="student")
     applicationDormitory = relationship("ApplicationDormitory", back_populates="student")
     user = relationship("User", back_populates="student")
+    studentInDormitory = relationship("StudentInDormitory",uselist=False, back_populates="student")
+    
+class StudentInDormitory(Base):
+     __tablename__ = 'studentInDormitory'
+     user_id = Column(Integer, ForeignKey('student.user_id'), nullable=False, primary_key=True)
+     numberDormitory = Column(Integer, nullable=False)
+     numberRoom= Column(Integer, nullable=False)
+     student = relationship("Student",uselist=False, back_populates="studentInDormitory")
 
 class Application(Base):
     __tablename__ = 'application'
