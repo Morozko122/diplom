@@ -13,18 +13,78 @@ import Typography from '@mui/joy/Typography';
 import TableComponent from '../Table/TableComponent';
 import useToken from '../useToken/useToken';
 import CustomTable from '../Table/CustomTableComponents';
+import {
+  Button,
+  Modal,
+  Input,
+  ModalDialog,
+  ModalClose,
+ 
+ 
+} from '@mui/joy';
 
 
-
+const DataDisplay = ({ selectedRow, columns }) => {
+  return (
+    <>
+      {columns.map((column) => (
+        <Typography key={column.field} sx={{ mt: 2 }}>
+          {column.title}: {selectedRow[column.field]}
+        </Typography>
+      ))}
+    </>
+  );
+};
 
 export default function OrderTable({ token, role }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
+
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const handleOpenEdit = () => setOpenEdit(true);
+  const handleCloseEdit = () => setOpenEdit(false);
+
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    handleOpenEdit()
+  };
+
+  const handleClose = () => {
+    handleCloseEdit()
+    setSelectedRow(null);
+  };
+
   const [rows, setRow] = React.useState([]);
   console.log(role);
   const userId = localStorage.getItem('user_id');
+
+  const updateApplication = async (newStatus) => {
+    try {
+      var url= 'http://localhost:5000';
+      console.log(role)
+      if(role == 'methodologist'){
+        url = `http://localhost:5000/update_application/${selectedRow?.id}`;
+      }
+      else if (role  == 'hostel-employee') url = `http://localhost:5000/applicationDormitory/${selectedRow?.id}`
+      const response = await axios.put(url, {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `application/json`
+        },
+        "status":newStatus
+      });
+      handleCloseEdit();
+      fetchApplication(userId);
+    } catch (error) {
+      console.error('Error update:', error);
+    }
+  };
+
   const fetchApplication = async (id) => {
     try {
       var url= 'http://localhost:5000';
+      console.log(role)
       if(role == 'methodologist'){
         url = `http://localhost:5000/methodologists/${id}/applications`;
       }
@@ -105,6 +165,8 @@ const columnsWorker = [
   
 ];
 
+const columns = role === "methodologist"? columnsMethodologists : columnsWorker;
+
   return (
     <React.Fragment>
       <Box
@@ -140,9 +202,62 @@ const columnsWorker = [
       </Box>
       <CustomTable
         data={rows}
-        columns={role === "methodologist"? columnsMethodologists : columnsWorker}
+        columns={columns}
         typeTable={'application'}
+        handleRowClick={handleRowClick}
         />
+
+<Modal open={openEdit} onClose={handleClose}>
+        <ModalDialog
+          aria-labelledby="add-user-modal"
+          aria-describedby="add-user-modal-description"
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '400px',
+            maxWidth: '100%',
+          }}
+        >
+          <ModalClose onClick={handleClose} />
+          <Typography id="add-user-modal" level="h6" component="h2">
+            Редактировать
+          </Typography>
+          <form> 
+          
+          {selectedRow && <DataDisplay selectedRow={selectedRow} columns={columns} />}
+            
+            <Button
+              onClick={() => updateApplication('Готово')}
+              variant="solid"
+              color="success"
+
+              sx={{ mt: 2, mr:2 }}
+            >
+              Готово
+            </Button>
+            <Button
+              onClick={() => updateApplication('В работе')}
+              variant="solid"
+              color="primary"
+
+              sx={{ mt: 2, mr:2 }}
+            >
+              В работе
+            </Button>
+            <Button
+              onClick={() => updateApplication('Ожидание')}
+              variant="solid"
+              color="neutral"
+
+              sx={{ mt: 2, mr:2 }}
+            >
+              Ожидание
+            </Button>
+          </form>
+        </ModalDialog>
+      </Modal>
       
 
       {/* <Box

@@ -95,7 +95,7 @@ function Router() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<OrderTable token={data.access_token} />} />
+          <Route index element={<OrderTable token={data.access_token} role={data.user_role} />} />
           <Route
             path="groups"
             element={

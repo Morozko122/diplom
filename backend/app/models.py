@@ -108,7 +108,7 @@ class User(Base, UserMixin):
     roles = relationship('Role', secondary='roles_users', backref=backref('users', lazy='dynamic'))
     group = relationship('Group', back_populates='users')
     student = relationship('Student', uselist=False, back_populates='user')
-    dormitoryWorker = relationship('DormitoryWorker', back_populates='user')
+    dormitoryWorker = relationship('DormitoryWorker',uselist=False, back_populates='userss')
 
 class Group(Base):
     __tablename__ = 'group'
@@ -145,7 +145,7 @@ class DormitoryWorker(Base):
      user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
      numberDormitory = Column(Integer, nullable=False)
      typeSpecialist = Column(String, nullable=False)
-     user = relationship("User", back_populates="dormitoryWorker")
+     userss = relationship("User", back_populates="dormitoryWorker")
      
 class ApplicationDormitory(Base):
     __tablename__ = 'applicationDormitory'

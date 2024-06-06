@@ -45,18 +45,42 @@ function RowMenu() {
     );
 }
 
+const instance = axios.create({
+    timeout: 1000,
+    
+  });
 export default function UserTable() {
     const [rows, setRow] = useState([]);
-    const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState({
-        role: '',
+
     });
-    
+    console.log(formData);
+
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [openEdit, setOpenEdit] = useState(false);
+    const handleOpenEdit = () => setOpenEdit(true);
+    const handleCloseEdit = () => setOpenEdit(false);
+
+    const handleRowClick = (row) => {
+        setSelectedRow(row);
+        fetchUserFullInfo(row.id)
+        handleOpenEdit()
+    };
+
+    const handleClose = () => {
+        setFormData({});
+        handleCloseEdit()
+        setSelectedRow(null);
+    };
+
     const [groups, setGroups] = useState([]);
 
+    const columns = [
+        { field: 'id', title: 'ID' },
+        { field: 'email', title: 'Почта' },
+        { field: 'username', title: 'Имя пользователя' },
+    ];
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
 
     const handleChange = (name, value) => {
         setFormData(prevFormData => ({
@@ -71,7 +95,11 @@ export default function UserTable() {
         const formJson = Object.fromEntries((formDatas as any).entries());
 
         try {
-            const response = await axios.post('http://localhost:5000/users', formJson);
+            var response;
+            if(selectedRow&& selectedRow.id != null) {
+                response = await instance.put(`http://localhost:5000/users/${selectedRow.id}/full`, formJson);
+            }
+            else response = await instance.post('http://localhost:5000/users', formJson);
             console.log(response.data);
             fetchUser();
             handleClose();
@@ -79,10 +107,10 @@ export default function UserTable() {
             console.error('Error adding user:', error);
         }
     };
-    
+
     const fetchGroups = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/groups');
+            const response = await instance.get('http://localhost:5000/groups');
             setGroups(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
@@ -91,8 +119,17 @@ export default function UserTable() {
 
     const fetchUser = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/users');
+            const response = await instance.get('http://localhost:5000/users');
             setRow(response.data);
+        } catch (error) {
+            console.error('Error fetching spravki:', error);
+            setRow([]);
+        }
+    };
+    const fetchUserFullInfo = async (id) => {
+        try {
+            const response = await instance.get(`http://localhost:5000/users/${id}/fullinfo`);
+            setFormData(response.data);
         } catch (error) {
             console.error('Error fetching spravki:', error);
             setRow([]);
@@ -142,11 +179,7 @@ export default function UserTable() {
             </FormControl>
         </React.Fragment>
     );
-    const columns = [
-        { field: 'id', title: 'ID' },
-        { field: 'email', title: 'Почта' },
-        { field: 'username', title: 'Имя пользователя' },
-    ];
+
     return (
         <React.Fragment>
             <Box
@@ -172,9 +205,9 @@ export default function UserTable() {
                     flexWrap: 'wrap',
                     justifyContent: 'space-between',
                 }}>
-                <Button variant="solid" color="primary" onClick={handleOpen}>
-                    Добавить пользователя
-                </Button>
+                    <Button variant="solid" color="primary" onClick={handleOpenEdit}>
+                        Добавить пользователя
+                    </Button>
                 </Box>
             </Box>
             <Box
@@ -192,7 +225,7 @@ export default function UserTable() {
             >
                 {/* {renderFilters()} */}
             </Box>
-            <CustomTable columns={columns} data={rows} typeTable={"admin"}/>
+            <CustomTable columns={columns} data={rows} typeTable={"admin"} handleRowClick={handleRowClick} />
             <Box
                 className="Pagination-laptopUp"
                 sx={{
@@ -206,7 +239,7 @@ export default function UserTable() {
                 }}
             >
             </Box>
-            <Modal open={open} onClose={handleClose}>
+            <Modal open={openEdit} onClose={handleClose}>
                 <ModalDialog
                     aria-labelledby="add-user-modal"
                     aria-describedby="add-user-modal-description"
@@ -231,6 +264,8 @@ export default function UserTable() {
                             <Input
                                 type="email"
                                 name="email"
+                                value={formData.email}
+                                onChange={(e) =>  handleChange("email", e.target.value)}
                                 required
                             />
                         </FormControl>
@@ -238,23 +273,31 @@ export default function UserTable() {
                             <FormLabel>Имя пользователя</FormLabel>
                             <Input
                                 type="text"
-                                name="username"
+                                name="full_name"
+                                value={formData.full_name}
+                                onChange={(e) =>  handleChange("full_name", e.target.value)}
                                 required
                             />
                         </FormControl>
+                        
                         <FormControl sx={{ mt: 2 }}>
                             <FormLabel>Пароль</FormLabel>
                             <Input
                                 type="password"
                                 name="password"
-                                required
+                                onKeyDown={(e) => {
+                                    if (e.key === ' ') {
+                                        e.preventDefault();
+                                    }
+                                }}
                             />
                         </FormControl>
                         <FormControl sx={{ mt: 2 }}>
                             <FormLabel>Роль</FormLabel>
                             <Select
                                 name="role"
-                                onChange={(e, value) => handleChange("role", value)}
+                                onChange={(e, value) => value !=''? handleChange("role", value): null}
+                                value={formData.role}
                                 required
                             >
                                 <Option value="admin">Администратор</Option>
@@ -269,35 +312,41 @@ export default function UserTable() {
                                 <Select
                                     name="group_id"
                                     required
+                                    value={formData.group_id}
+                                    
                                 >
-                                     {groups.map((group) => (
-                                    <Option key={group.id} value={group.id}>
-                                        {group.name}
-                                    </Option>
+                                    {groups.map((group) => (
+                                        <Option key={group.id} value={group.id}>
+                                            {group.name}
+                                        </Option>
                                     ))}
                                 </Select>
                             </FormControl>
                         )}
-                         {formData.role === 'hostel-employee' && (
+                        {formData.role === 'hostel-employee' && (
                             <>
-                            <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Номер общежития</FormLabel>
-                            <Input
-                                type="text"
-                                name="numberDormitory"
-                                required
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mt: 2 }}>
-                            <FormLabel>Тип специалиста</FormLabel>
-                            <Input
-                                type="text"
-                                name="typeSpecialist"
-                                required
-                            />
-                        </FormControl></>
-                          
-                       
+                                <FormControl sx={{ mt: 2 }}>
+                                    <FormLabel>Номер общежития</FormLabel>
+                                    <Input
+                                        type="text"
+                                        name="numberDormitory"
+                                        value={formData.numberDormitory}
+                                        onChange={(e) =>  handleChange("numberDormitory", e.target.value)}
+                                        required
+                                    />
+                                </FormControl>
+                                <FormControl sx={{ mt: 2 }}>
+                                    <FormLabel>Тип специалиста</FormLabel>
+                                    <Input
+                                        type="text"
+                                        name="typeSpecialist"
+                                        value={formData.typeSpecialist}
+                                        onChange={(e) =>  handleChange("typeSpecialist", e.target.value)}
+                                        required
+                                    />
+                                </FormControl></>
+
+
                         )}
                         <Button
                             type="submit"

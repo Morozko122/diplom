@@ -12,6 +12,7 @@ import Chip from '@mui/joy/Chip';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import BlockIcon from '@mui/icons-material/Block';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { ColorPaletteProp } from '@mui/joy/styles';
 
 function RowMenu() {
@@ -34,7 +35,7 @@ function RowMenu() {
   );
 }
 
-function CustomTable({ columns, data, typeTable }) {
+function CustomTable({ columns, data, typeTable, handleRowClick }) {
   return (
     <Sheet
       className="OrderTableContainer"
@@ -73,7 +74,7 @@ function CustomTable({ columns, data, typeTable }) {
         </thead>
         <tbody>
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} onClick={() => handleRowClick(row)}>
               {columns.map((col) => (
                 <td key={col.field}>
                   <Typography level="body-xs">{row[col.field]}</Typography>
@@ -89,14 +90,14 @@ function CustomTable({ columns, data, typeTable }) {
                         {
                           "Готово": <CheckRoundedIcon />,
                           "В работе": <AutorenewRoundedIcon />,
-                          Cancelled: <BlockIcon />,
+                          "Ожидание": <HourglassEmptyIcon />,
                         }[row.status]
                       }
                       color={
                         {
                           "Готово": 'success',
-                          "В работе": 'neutral',
-                          Cancelled: 'danger',
+                          "В работе": 'primary',
+                          "Ожидание": 'neutral',
                         }[row.status] as ColorPaletteProp
                       }
                     >

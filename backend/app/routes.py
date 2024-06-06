@@ -34,100 +34,6 @@ def logout():
     resp = jsonify({'logout': True})
     unset_jwt_cookies(resp)
     return resp, 200
-
-
-@app.route('/get_spravka/<int:student_code>', methods=['GET'])
-def get_spravka(student_code):
-    spravki = Application.query.filter_by(personal_number=student_code).all()
-    if not spravki:
-        return jsonify({"message": "No spravki found for this student"}), 404
-    
-    result = [
-        {
-            "id": spravka.id,
-            "personal_number": spravka.personal_number,
-            "name": spravka.name,
-            "quantity": spravka.quantity,
-            "status": spravka.status,
-            "date": spravka.date.strftime('%Y-%m-%d %H:%M:%S')
-        } for spravka in spravki
-    ]
-    return jsonify(result), 200
-
-@app.route('/applications/add', methods=['POST'])
-def add_application():
-    data = request.json
-    personal_number = data.get('personal_number')
-    name = data.get('name')
-    quantity = data.get('quantity')
-    status = "В работе"
-    
-
-    new_application = Application(
-        personal_number=personal_number,
-        name=name,
-        quantity=quantity,
-        status=status,
-        
-    )
-    db_session.add(new_application)
-    db_session.commit()
-
-    return jsonify({"message": "Application added successfully"}), 201
-
-@app.route('/update_application/<int:application_id>', methods=['PUT'])
-def update_application(application_id):
-    # Get the data from the request
-    data = request.json
-    print(data)
-    print(data.get('status'))
-    application = Application.query.filter_by(id = application_id).all()[0]
-
-        # Check if application exists
-    if not application:
-        return jsonify({"error": "Application not found"}), 404
-
-        # Update the fields
-    if 'personal_number' in data:
-        application.personal_number = data.get('personal_number')
-    if 'name' in data:
-        application.name = data.get('name')
-    if 'quantity' in data:
-        application.quantity = data.get('quantity')
-    if 'status' in data:
-        application.status = data.get('status')
-    
-
-        # Commit the changes
-    db_session.commit()
-
-    return jsonify({"message": "Application updated successfully"})
-
-
-@app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
-@jwt_required()
-def get_applications_for_methodologist(methodologist_id):
-    #methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
-   
-    methodologist = User.query.filter_by(id = methodologist_id).all()
-    applications = []
-   
-    for group in methodologist[0].group:
-       
-        for student in group.students:
-            for application in student.applications:
-                applications.append({
-                    "id": application.id,
-                    "personal_number": application.personal_number,
-                    "name": application.name,
-                    "quantity": application.quantity,
-                    "status": application.status,
-                    "date": application.date.strftime('%Y-%m-%d %H:%M:%S'),
-                    "full_name": student.user.full_name
-                })
-
-    return jsonify(applications)
-
 @app.route('/roles', methods=['GET'])
 def get_roles():
     roles = Role.query.all()
@@ -141,6 +47,8 @@ def get_roles():
         for role in roles
     ]
     return jsonify(roles_list)
+
+#______________Роли_____________________#
 
 @app.route('/roles', methods=['POST'])
 def add_role():
@@ -165,6 +73,10 @@ def edit_role(role_id):
     db_session.commit()
     return jsonify({"message": "Role updated", "role": role.name})
 
+#___________________________________#
+
+#______________Users_____________________#
+
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
@@ -180,6 +92,7 @@ def get_users():
         for user in users
     ]
     return jsonify(users_list)
+
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_users_id(user_id):
     users = User.query.filter_by(id = user_id).first()
@@ -189,6 +102,26 @@ def get_users_id(user_id):
         'full_name': users.full_name,
         'roles': [{'id': role.id, 'name': role.name} for role in users.roles]
     }
+        
+    return jsonify(users_list)
+
+@app.route('/users/<int:user_id>/fullinfo', methods=['GET'])
+def get_users_id_full_info(user_id):
+    users = User.query.filter_by(id = user_id).first()
+    
+    users_list = {
+        'id': users.id,
+        'email': users.email,
+        'full_name': users.full_name,
+        'roles': [{'id': role.id, 'name': role.name} for role in users.roles]
+    }
+    users_list['role']= users_list["roles"][0]['name']
+    if (any(role.get('name') == "student" for role in users_list["roles"])):
+        users_list["group_id"] = users.student.group.id
+        users_list["group_name"] = users.student.group.name
+    if (any(role.get('name') == "hostel-employee" for role in users_list["roles"])):
+        users_list["numberDormitory"] = users.dormitoryWorker.numberDormitory
+        users_list["typeSpecialist"] = users.dormitoryWorker.typeSpecialist
         
     return jsonify(users_list)
 
@@ -207,7 +140,7 @@ def add_user():
 
     new_user = User(
         email=data['email'],
-        full_name=data['username'],
+        full_name=data['full_name'],
         password=hash_password(data['password']),
         active=data.get('active', True),
     )
@@ -242,24 +175,131 @@ def add_user():
     db_session.commit()
 
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
-#
-def add_worker():
-    data = request.get_json()
-    worker = DormitoryWorker(
-        user_id=data['user_id'],
-        numberDormitory=data['numberDormitory'],
-        typeSpecialist=data['typeSpecialist']
-    )
-    db_session.add(worker)
-    db_session.commit()
-    return jsonify(worker.serialize())
-#
-@app.errorhandler(400)
-def bad_request(error):
-    response = jsonify({"error": "Bad request", "message": str(error)})
-    response.status_code = 400
-    return response
 
+@app.route('/users/<int:user_id>/full', methods=['PUT'])
+def edit_user_full(user_id):
+    data = request.json
+    
+    role_name = data.get('role')
+    role = Role.query.filter_by(name=role_name).first()
+    if not role:
+        return jsonify({"error": "Invalid role"}), 400
+    
+    existing_user = app.security.datastore.find_user(id=user_id)
+    print(existing_user)
+    for key, value in data.items():
+        if hasattr(existing_user, key) and (key == "password" and value !='') and value !='':
+            setattr(existing_user, key, value)
+    db_session.commit()
+    
+   
+
+    return jsonify({"message": "User updated", "user": existing_user.email})
+
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def edit_user(user_id):
+    data = request.json
+    user = User.query.filter_by(id = user_id)
+    
+    for key, value in data.items():
+        if hasattr(user, key):
+            setattr(user, key, value)
+    db_session.commit()
+    return jsonify({"message": "User updated", "user": user.email})
+
+#___________________________________#
+
+#______________Справки_____________________#
+
+@app.route('/get_spravka/<int:student_code>', methods=['GET'])
+def get_spravka(student_code):
+    spravki = Application.query.filter_by(personal_number=student_code).all()
+    if not spravki:
+        return jsonify({"message": "No spravki found for this student"}), 404
+    
+    result = [
+        {
+            "id": spravka.id,
+            "personal_number": spravka.personal_number,
+            "name": spravka.name,
+            "quantity": spravka.quantity,
+            "status": spravka.status,
+            "date": spravka.date.strftime('%Y-%m-%d %H:%M:%S')
+        } for spravka in spravki
+    ]
+    return jsonify(result), 200
+
+@app.route('/applications/add', methods=['POST'])
+def add_application():
+    data = request.json
+    personal_number = data.get('personal_number')
+    name = data.get('name')
+    quantity = data.get('quantity')
+    status = "Ожидание"
+    
+
+    new_application = Application(
+        personal_number=personal_number,
+        name=name,
+        quantity=quantity,
+        status=status,
+        
+    )
+    db_session.add(new_application)
+    db_session.commit()
+
+    return jsonify({"message": "Application added successfully"}), 201
+
+@app.route('/update_application/<int:application_id>', methods=['PUT'])
+def update_application(application_id):
+    # Get the data from the request
+    data = request.json
+    print(data)
+    print(data.get('status'))
+    application = Application.query.filter_by(id = application_id).all()[0]
+
+        # Check if application exists
+    if not application:
+        return jsonify({"error": "Application not found"}), 404
+
+        # Update the fields
+    for key, value in data.items():
+        if hasattr(application, key):
+            setattr(application, key, value)
+    
+
+        # Commit the changes
+    db_session.commit()
+
+    return jsonify({"message": "Application updated successfully"})
+
+#___________________________________#
+
+#______________Методисты_____________________#
+@app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
+@jwt_required()
+def get_applications_for_methodologist(methodologist_id):
+    #methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
+   
+    methodologist = User.query.filter_by(id = methodologist_id).all()
+    applications = []
+   
+    for group in methodologist[0].group:
+       
+        for student in group.students:
+            for application in student.applications:
+                applications.append({
+                    "id": application.id,
+                    "personal_number": application.personal_number,
+                    "name": application.name,
+                    "quantity": application.quantity,
+                    "status": application.status,
+                    "date": application.date.strftime('%Y-%m-%d %H:%M:%S'),
+                    "full_name": student.user.full_name
+                })
+    applications.sort(key=lambda x: x["id"], reverse=True)
+    
+    return jsonify(applications)
 
 @app.route('/methodologists', methods=['GET'])
 def get_methodologists():
@@ -275,48 +315,10 @@ def get_methodologists():
         for methodologist in methodologists
     ]
     return jsonify(methodologists_list)
-    
 
-@app.route('/users/<int:user_id>', methods=['PUT'])
-def edit_user(user_id):
-    data = request.json
-    user = User.query.filter_by(id = user_id)
-    user.email = data.get('email', user.email)
-    user.full_name = data.get('username', user.full_name)
-    user.password = data.get('password', user.password)
-    user.active = data.get('active', user.active)
-    user.fs_uniquifier = data.get('fs_uniquifier', user.fs_uniquifier)
-    db_session.commit()
-    return jsonify({"message": "User updated", "user": user.email})
+#___________________________________#
 
-
-@app.route('/groups', methods=['POST'])
-def add_group():
-    data = request.json
-    new_group = Group(
-        name=data['groupName'],
-        user_id=data['methodologist']
-    )
-    db_session.add(new_group)
-    db_session.commit()
-    return jsonify({"message": "Group added", "group": new_group.name})
-
-@app.route('/groups', methods=['GET'])
-def get_group():
-    groups = Group.query.all()
-    groups_list =  [
-        {
-            'id': group.id,
-            'name': group.name,
-            'methodologist_id': group.user_id,
-            'methodologist':group.users.full_name
-        }
-        for group in groups
-    ]
-    return jsonify(groups_list)
-
-
-# Вспомогательные функции сериализации
+#______________Общежитие _____________________#  
 def serialize_worker(worker):
     return {
         'id': worker.id,
@@ -334,13 +336,14 @@ def serialize_application(application):
         'numberDormitory': application.numberDormitory,
         'address': application.address,
         'status': application.status,
-        'date': application.date.isoformat()
+        'date': application.date.strftime('%Y-%m-%d %H:%M:%S')
     }
 
 DormitoryWorker.serialize = serialize_worker
 ApplicationDormitory.serialize = serialize_application
 
-# Эндпоинты для DormitoryWorker
+#______________Работники общаги_____________________#
+
 @app.route('/workers', methods=['GET'])
 @app.route('/workers/<int:id>', methods=['GET'])
 def get_workers(id=None):
@@ -387,12 +390,14 @@ def get_worker_app(id):
         applications = []
         for app in listApp:
             applications.append(app.serialize())
+        applications.sort(key=lambda x: x["id"], reverse=True)
         return jsonify(applications)
     return {'message': 'Application Dormitory not found'}, 404
-    
-    
 
-# Эндпоинты для ApplicationDormitory
+#___________________________________#
+
+#______________Заявки в общаге_____________________#
+    
 @app.route('/applicationDormitory', methods=['GET'])
 @app.route('/applicationDormitory/<int:id>', methods=['GET'])
 def get_applicationDormitory(id=None):
@@ -426,15 +431,44 @@ def edit_applicationDormitory(id):
     application = ApplicationDormitory.query.get(id)
     if not application:
         return {'message': 'Application Dormitory not found'}, 404
-    application.personal_number = data.get('personal_number', application.personal_number)
-    application.description = data.get('description', application.description)
-    application.typeSpecialist = data.get('typeSpecialist', application.typeSpecialist)
-    application.numberDormitory = data.get('numberDormitory', application.numberDormitory)
-    application.address = data.get('address', application.address)
-    application.status = data.get('status', application.status)
+    
+    for key, value in data.items():
+        if hasattr(application, key):
+            setattr(application, key, value)
+            
     db_session.commit()
     return jsonify(application.serialize())
 
+#___________________________________#
+    
+#______________Группы_____________________#
+
+@app.route('/groups', methods=['POST'])
+def add_group():
+    data = request.json
+    new_group = Group(
+        name=data['groupName'],
+        user_id=data['methodologist']
+    )
+    db_session.add(new_group)
+    db_session.commit()
+    return jsonify({"message": "Group added", "group": new_group.name})
+
+@app.route('/groups', methods=['GET'])
+def get_group():
+    groups = Group.query.all()
+    groups_list =  [
+        {
+            'id': group.id,
+            'name': group.name,
+            'methodologist_id': group.user_id,
+            'methodologist':group.users.full_name
+        }
+        for group in groups
+    ]
+    return jsonify(groups_list)
+
+#___________________________________#
 
 
 @app.route('/generate_qr', methods=['GET'])
@@ -448,3 +482,10 @@ def generate_qr():
     buffer.seek(0)
 
     return send_file(buffer, mimetype='image/png')
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    response = jsonify({"error": "Bad request", "message": str(error)})
+    response.status_code = 400
+    return response
