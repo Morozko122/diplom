@@ -45,7 +45,7 @@ const login = async (username, password) => {
 const fetchCurrentUser = async (id) => {
   try {
     console.log(id);
-    const response = await axios.get(`http://localhost:5000/users/${id}`);
+    const response = await axios.get(`${API_BASE_URL}/users/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching spravki:', error);

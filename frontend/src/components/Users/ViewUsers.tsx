@@ -26,6 +26,7 @@ import MenuItem from '@mui/joy/MenuItem';
 import Divider from '@mui/joy/Divider';
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 import CustomTable from '../Table/CustomTableComponents';
+import { API_BASE_URL } from '../../../config';
 
 function RowMenu() {
     return (
@@ -97,9 +98,9 @@ export default function UserTable() {
         try {
             var response;
             if(selectedRow&& selectedRow.id != null) {
-                response = await instance.put(`http://localhost:5000/users/${selectedRow.id}/full`, formJson);
+                response = await instance.put(`${API_BASE_URL}/users/${selectedRow.id}/full`, formJson);
             }
-            else response = await instance.post('http://localhost:5000/users', formJson);
+            else response = await instance.post(`${API_BASE_URL}/users`, formJson);
             console.log(response.data);
             fetchUser();
             handleClose();
@@ -110,7 +111,7 @@ export default function UserTable() {
 
     const fetchGroups = async () => {
         try {
-            const response = await instance.get('http://localhost:5000/groups');
+            const response = await instance.get(`${API_BASE_URL}/groups`);
             setGroups(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
@@ -119,7 +120,7 @@ export default function UserTable() {
 
     const fetchUser = async () => {
         try {
-            const response = await instance.get('http://localhost:5000/users');
+            const response = await instance.get(`${API_BASE_URL}/users`);
             setRow(response.data);
         } catch (error) {
             console.error('Error fetching spravki:', error);
@@ -128,7 +129,7 @@ export default function UserTable() {
     };
     const fetchUserFullInfo = async (id) => {
         try {
-            const response = await instance.get(`http://localhost:5000/users/${id}/fullinfo`);
+            const response = await instance.get(`${API_BASE_URL}/users/${id}/fullinfo`);
             setFormData(response.data);
         } catch (error) {
             console.error('Error fetching spravki:', error);

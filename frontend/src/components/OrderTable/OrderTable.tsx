@@ -22,6 +22,7 @@ import {
  
  
 } from '@mui/joy';
+import { API_BASE_URL } from '../../../config';
 
 
 const DataDisplay = ({ selectedRow, columns }) => {
@@ -60,12 +61,12 @@ export default function OrderTable({ token, role }) {
 
   const updateApplication = async (newStatus) => {
     try {
-      var url= 'http://localhost:5000';
+      var url= `${API_BASE_URL}`;
       console.log(role)
       if(role == 'methodologist'){
-        url = `http://localhost:5000/update_application/${selectedRow?.id}`;
+        url = `${API_BASE_URL}/update_application/${selectedRow?.id}`;
       }
-      else if (role  == 'hostel-employee') url = `http://localhost:5000/applicationDormitory/${selectedRow?.id}`
+      else if (role  == 'hostel-employee') url = `${API_BASE_URL}/applicationDormitory/${selectedRow?.id}`
       const response = await axios.put(url, {
         headers:
         {
@@ -83,12 +84,12 @@ export default function OrderTable({ token, role }) {
 
   const fetchApplication = async (id) => {
     try {
-      var url= 'http://localhost:5000';
+      var url= `${API_BASE_URL}`;
       console.log(role)
       if(role == 'methodologist'){
-        url = `http://localhost:5000/methodologists/${id}/applications`;
+        url = `${API_BASE_URL}/methodologists/${id}/applications`;
       }
-      else if (role  == 'hostel-employee') url = `http://localhost:5000/workers/${id}/applications`
+      else if (role  == 'hostel-employee') url = `${API_BASE_URL}/workers/${id}/applications`
       const response = await axios.get(url, {
         headers:
         {
