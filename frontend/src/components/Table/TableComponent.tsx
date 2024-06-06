@@ -21,6 +21,7 @@ import {
  
 } from '@mui/joy';
 import axios from 'axios';
+import { API_BASE_URL } from '../../../config';
 
 interface TableComponentProps {
   columns: string[];
@@ -42,7 +43,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, rows, selected
 
   const updateApplication = async (newStatus) => {
     try {
-      const response = await axios.put(`http://localhost:5000/update_application/${selectedRow?.id}`, {
+      const response = await axios.put(`${API_BASE_URL}/update_application/${selectedRow?.id}`, {
         headers:
         {
           'Authorization': `Bearer ${token}`,
