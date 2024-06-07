@@ -107,9 +107,9 @@ export default function UserTable({token}) {
         try {
             var response;
             if(selectedRow&& selectedRow.id != null) {
-                response = await instance.put(`${API_BASE_URL}/users/${selectedRow.id}/full`, formJson);
+                response = await axios.put(`${API_BASE_URL}/users/${selectedRow.id}/full`, formJson);
             }
-            else response = await instance.post(`${API_BASE_URL}/users`, formJson);
+            else response = await axios.post(`${API_BASE_URL}/users`, formJson);
             console.log(response.data);
             fetchUser();
             handleClose();
@@ -120,7 +120,7 @@ export default function UserTable({token}) {
 
     const fetchGroups = async () => {
         try {
-            const response = await instance.get(`${API_BASE_URL}/groups`, headers);
+            const response = await axios.get(`${API_BASE_URL}/groups`, headers);
 
             setGroups(response.data);
         } catch (error) {
@@ -131,7 +131,7 @@ export default function UserTable({token}) {
     const fetchUser = async () => {
         try {
 
-            const response = await instance.get(`${API_BASE_URL}/users`, headers);
+            const response = await axios.get(`${API_BASE_URL}/users`, headers);
 
             setRow(response.data);
         } catch (error) {
@@ -141,7 +141,7 @@ export default function UserTable({token}) {
     };
     const fetchUserFullInfo = async (id) => {
         try {
-            const response = await instance.get(`${API_BASE_URL}/users/${id}/fullinfo`, headers);
+            const response = await axios.get(`${API_BASE_URL}/users/${id}/fullinfo`, headers);
 
             setFormData(response.data);
         } catch (error) {

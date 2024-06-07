@@ -13,7 +13,8 @@ from app.models import User, Role
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-cors = CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
 app.security = Security(app, user_datastore)
