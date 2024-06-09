@@ -10,3 +10,4 @@ class Config:
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634')
     SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
     JWT_SECRET_KEY = "super-secret"
+    UPLOAD_FOLDER = "uploads"

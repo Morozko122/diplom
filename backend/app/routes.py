@@ -1,5 +1,5 @@
 from app import app
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import cross_origin
 from flask import jsonify, render_template
 from flask import render_template_string
@@ -13,6 +13,8 @@ import io
 from PIL import Image
 from flask import Flask, request, jsonify, send_file
 from datetime import timedelta
+from werkzeug.utils import secure_filename
+import os
 
 jwt = JWTManager(app)
 
@@ -35,6 +37,14 @@ def logout():
     resp = jsonify({'logout': True})
     unset_jwt_cookies(resp)
     return resp, 200
+
+@app.route('/check_token', methods=['GET'])
+@jwt_required()
+def check():
+     return "1"
+
+
+#______________Роли_____________________#
 @app.route('/roles', methods=['GET'])
 def get_roles():
     roles = Role.query.all()
@@ -48,8 +58,6 @@ def get_roles():
         for role in roles
     ]
     return jsonify(roles_list)
-
-#______________Роли_____________________#
 
 @app.route('/roles', methods=['POST'])
 def add_role():
@@ -123,6 +131,10 @@ def get_users_id_full_info(user_id):
     if (any(role.get('name') == "student" for role in users_list["roles"])):
         users_list["group_id"] = users.student.group.id
         users_list["group_name"] = users.student.group.name
+        users_list["liveInDormitory"] = str(users.student.liveInDormitory)
+        if(users.student.liveInDormitory):
+            users_list["numberDormitory"] = users.student.studentInDormitory.numberDormitory
+            users_list["numberRoom"] = users.student.studentInDormitory.numberRoom
     if (any(role.get('name') == "hostel-employee" for role in users_list["roles"])):
         users_list["numberDormitory"] = users.dormitoryWorker.numberDormitory
         users_list["typeSpecialist"] = users.dormitoryWorker.typeSpecialist
@@ -165,9 +177,12 @@ def add_user():
         #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
         if not group:
             return jsonify({"error": "Invalid group name"}), 400
-
-        new_student = Student(user_id=query_id_select.id, group_id=group.id)
+        
+        new_student = Student(user_id=query_id_select.id, group_id=group.id, liveInDormitory=data.get('liveInDormitory') == 'True' )
         db_session.add(new_student)
+        if(data.get('liveInDormitory') == 'True'):
+            new_StudentInDormitory = StudentInDormitory(user_id=query_id_select.id, numberDormitory = data.get('numberDormitory'), numberRoom =data.get('numberRoom'))
+            db_session.add(new_StudentInDormitory)
     elif role_name == 'hostel-employee':
         query_id_select = app.security.datastore.find_user(email=new_user.email)
         worker = DormitoryWorker(
@@ -485,7 +500,7 @@ def generate_qr(id):
     studentInDormitory= student.studentInDormitory
     if(student !=None and student.liveInDormitory):
         access_token = create_access_token(identity=student.user_id ,additional_claims={"numberDormitory": studentInDormitory.numberDormitory , "numberRoom": studentInDormitory.numberRoom}, expires_delta=timedelta(seconds=120))
-        return jsonify(access_token_dormitory=access_token), 200
+        return access_token, 200
         
     return {'message': 'В доступе отказано'}, 401
 
@@ -512,3 +527,30 @@ def bad_request(error):
     response = jsonify({"error": "Bad request", "message": str(error)})
     response.status_code = 400
     return response
+
+
+#тест карты
+@app.route('/files/<filename>', methods=['GET'])
+def get_file(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    print(file_path)
+    if os.path.exists(file_path):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    else:
+        return jsonify({'error': 'File not found'}), 404
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        return jsonify({'message': 'File successfully uploaded'}), 200
+    
+

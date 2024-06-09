@@ -107,9 +107,9 @@ export default function UserTable({token}) {
         try {
             var response;
             if(selectedRow&& selectedRow.id != null) {
-                response = await axios.put(`${API_BASE_URL}/users/${selectedRow.id}/full`, formJson);
+                response = await axios.put(`${API_BASE_URL}/users/${selectedRow.id}/full`,headers,formJson);
             }
-            else response = await axios.post(`${API_BASE_URL}/users`, formJson);
+            else response = await axios.post(`${API_BASE_URL}/users`, formJson, headers);
             console.log(response.data);
             fetchUser();
             handleClose();
@@ -321,6 +321,7 @@ export default function UserTable({token}) {
                             </Select>
                         </FormControl>
                         {formData.role === 'student' && (
+                            <>
                             <FormControl sx={{ mt: 2 }}>
                                 <FormLabel>Группа</FormLabel>
                                 <Select
@@ -336,6 +337,47 @@ export default function UserTable({token}) {
                                     ))}
                                 </Select>
                             </FormControl>
+                            <FormControl sx={{ mt: 2 }}>
+                            <FormLabel>Проживает в общежитии</FormLabel>
+                            <Select
+                                name="liveInDormitory"
+                                required
+                                value={formData.liveInDormitory}
+                                onChange={(e, value) => value !=''? handleChange("liveInDormitory", value): null}
+                                
+                            >
+                                <Option value='True'>Да</Option>
+                                <Option value="False">Нет</Option>
+                              
+                            </Select>
+                        </FormControl>
+
+                        {formData.liveInDormitory === 'True' && (
+                            <>
+                            <FormControl sx={{ mt: 2 }}>
+                                    <FormLabel>Номер общежития</FormLabel>
+                                    <Input
+                                        type="text"
+                                        name="numberDormitory"
+                                        value={formData.numberDormitory}
+                                        onChange={(e) =>  handleChange("numberDormitory", e.target.value)}
+                                        required
+                                    />
+                                </FormControl>
+                                <FormControl sx={{ mt: 2 }}>
+                                    <FormLabel>Номер комнаты</FormLabel>
+                                    <Input
+                                        type="text"
+                                        name="numberRoom"
+                                        value={formData.numberRoom}
+                                        onChange={(e) =>  handleChange("numberRoom", e.target.value)}
+                                        required
+                                    />
+                                </FormControl>
+                            </>
+
+                        )}
+                        </>
                         )}
                         {formData.role === 'hostel-employee' && (
                             <>

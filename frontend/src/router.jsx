@@ -6,6 +6,7 @@ import UserTable from "./components/Users/ViewUsers";
 import OrderTable from "./components/OrderTable/OrderTable";
 import GroupTable from "./components/Group/ViewGroup";
 import useToken from "./components/useToken/useToken";
+import FileUpload from "./components/MapPage/mapPage";
 
 const keys = [
   'access_token', 'user_role', 'user_id', 'email', 'full_name'
@@ -55,7 +56,14 @@ function Router() {
               </ProtectedRoute>
             }
           />
+           <Route
+            path="map"
+            element={
+                <FileUpload />
+            }
+          />
         </Route>
+        
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
