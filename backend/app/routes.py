@@ -233,21 +233,21 @@ def edit_user(user_id):
 
 #______________Справки_____________________#
 
-@app.route('/get_spravka/<int:student_code>', methods=['GET'])
-def get_spravka(student_code):
-    spravki = Application.query.filter_by(personal_number=student_code).all()
-    if not spravki:
-        return jsonify({"message": "No spravki found for this student"}), 404
+@app.route('/get_applications/<int:student_code>', methods=['GET'])
+def get_applications(student_code):
+    applications = Application.query.filter_by(personal_number=student_code).all()
+    if not applications:
+        return jsonify({"message": "No applications found for this student"}), 404
     
     result = [
         {
-            "id": spravka.id,
-            "personal_number": spravka.personal_number,
-            "name": spravka.name,
-            "quantity": spravka.quantity,
-            "status": spravka.status,
-            "date": spravka.date.strftime('%Y-%m-%d %H:%M:%S')
-        } for spravka in spravki
+            "id": application.id,
+            "personal_number": application.personal_number,
+            "name": application.name,
+            "quantity": application.quantity,
+            "status": application.status,
+            "date": application.date.strftime('%Y-%m-%d %H:%M:%S')
+        } for application in applications
     ]
     return jsonify(result), 200
 
@@ -431,6 +431,28 @@ def get_applicationDormitory(id=None):
     applications = ApplicationDormitory.query.all()
     return jsonify([app.serialize() for app in applications])
 
+@app.route('/applicationDormitory/student/<int:id>', methods=['GET'])
+def get_applicationDormitory_std(id):
+    
+    if id:
+        applications =  ApplicationDormitory.query.filter_by(personal_number = id).all()
+   
+        result = [
+        {
+        'id': application.id,
+        'personal_number': application.personal_number,
+        'description': application.description,
+        'typeSpecialist': application.typeSpecialist,
+        'numberDormitory': application.numberDormitory,
+        'address': application.address,
+        'status': application.status,
+        'date': application.date.strftime('%Y-%m-%d %H:%M:%S')
+        } for application in applications
+    ]
+        print(result)
+    return jsonify(result), 200
+        
+
 @app.route('/applicationDormitory/add', methods=['POST'])
 def add_applicationDormitory():
     data = request.get_json()
@@ -445,7 +467,7 @@ def add_applicationDormitory():
     )
     db_session.add(application)
     db_session.commit()
-    return jsonify(application.serialize())
+    return jsonify({"message": "Application added successfully"}), 201
 
 @app.route('/applicationDormitory/<int:id>', methods=['PUT'])
 def edit_applicationDormitory(id):
