@@ -144,6 +144,15 @@ def get_users_id_full_info(user_id):
         
     return jsonify(users_list)
 
+
+@app.route('/users/<int:id>', methods=['DELETE'])
+@roles_required('admin')
+def delete_user(id):
+    User.query.filter_by(id=id).delete()
+    db_session.commit();
+    
+    return jsonify("Delete user id=${id}"), 200
+
 @app.route('/users', methods=['POST'])
 @roles_required('admin')
 def add_user():
@@ -283,6 +292,14 @@ def get_applications(student_code):
         } for application in applications
     ]
     return jsonify(result), 200
+
+@app.route('/applications/<int:id>', methods=['DELETE'])
+@roles_required('admin', 'methodologist', 'student')
+def delete_applications(id):
+    applications = Application.query.filter_by(id=id).delete()
+    db_session.commit();
+    
+    return jsonify("Delete applications id=${id}"), 200
 
 @app.route('/applications/add', methods=['POST'])
 @roles_required('admin', 'student')
@@ -471,6 +488,14 @@ def get_applicationDormitory(id=None):
         return {'message': 'Application Dormitory not found'}, 404
     applications = ApplicationDormitory.query.all()
     return jsonify([app.serialize() for app in applications])
+
+@app.route('/applicationDormitory/<int:id>', methods=['DELETE'])
+@roles_required('admin')
+def delete_applicationDormitory(id):
+    ApplicationDormitory.query.filter_by(id=id).delete()
+    db_session.commit();
+    
+    return jsonify("Delete ApplicationDormitory id=${id}"), 200
 
 @app.route('/applicationDormitory/student/<int:id>', methods=['GET'])
 @roles_required('admin', 'hostel-employee', 'student')
