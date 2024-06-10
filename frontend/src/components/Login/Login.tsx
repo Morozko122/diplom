@@ -22,7 +22,7 @@ import { redirect, useNavigate } from 'react-router-dom';
 interface FormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
   password: HTMLInputElement;
-  persistent: HTMLInputElement;
+ 
 }
 interface SignInFormElement extends HTMLFormElement {
   readonly elements: FormElements;
@@ -42,13 +42,21 @@ const login = async (username, password) => {
   }
 };
 
-const fetchCurrentUser = async (id) => {
+const fetchCurrentUser = async (id, token) => {
+  console.log(token);
+  const headers = {
+    headers:
+    {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': `application/json`
+    }
+  }
   try {
     console.log(id);
-    const response = await axios.get(`${API_BASE_URL}/users/${id}`);
+    const response = await axios.get(`${API_BASE_URL}/users/${id}`,headers);
     return response.data;
   } catch (error) {
-    console.error('Error fetching spravki:', error);
+    
     throw error;
   }
 };
@@ -175,7 +183,7 @@ export default function SignIn({ setToken, setRole, setId, setData, keys }) {
                   const data = {
                     username: formElements.username.value,
                     password: formElements.password.value,
-                    persistent: formElements.persistent.checked,
+                
                   };
                   try {
                     login(data.username, data.password)
@@ -184,7 +192,7 @@ export default function SignIn({ setToken, setRole, setId, setData, keys }) {
                         setData('user_role', data);
                         setData('user_id', data);
                         console.log(data);
-                        fetchCurrentUser(data["user_id"])
+                        fetchCurrentUser(data["user_id"],data["access_token"] )
                           .then(user_data => {
                             console.log(user_data);
                               setData('email', user_data);
@@ -213,18 +221,7 @@ export default function SignIn({ setToken, setRole, setId, setData, keys }) {
                   <Input type="password" name="password" />
                 </FormControl>
                 <Stack gap={4} sx={{ mt: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Checkbox size="sm" label="Remember me" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link">
-                      Забыли свой пароль?
-                    </Link>
-                  </Box>
+                  
                   <Button type="submit" fullWidth>
                     Войти
                   </Button>

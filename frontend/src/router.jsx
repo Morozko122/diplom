@@ -7,12 +7,34 @@ import OrderTable from "./components/OrderTable/OrderTable";
 import GroupTable from "./components/Group/ViewGroup";
 import useToken from "./components/useToken/useToken";
 import FileUpload from "./components/MapPage/mapPage";
+import axios from 'axios';
+import { API_BASE_URL } from "../config";
 
 const keys = [
   'access_token', 'user_role', 'user_id', 'email', 'full_name'
 ];
 
-function ProtectedRoute({ token, role, requiredRoles, children }) {
+const checkToken = async (token, removeData) => {
+  const headers = {
+    headers:
+    {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': `application/json`
+    }
+  }
+  try {
+    await axios.get(`${API_BASE_URL}/check_token`, headers);
+    return 200;
+  }
+  catch (e){
+    removeData();
+    return e.response.status;
+  }
+  
+};
+
+function ProtectedRoute({ token, role, requiredRoles , removeData, children }) {
+  checkToken(token, removeData);
   if (!token || token === "" || token === undefined) {
     return <Navigate to="/login" replace />;
   }
@@ -34,7 +56,7 @@ function Router() {
         <Route
           path="/"
           element={
-            <ProtectedRoute token={data.access_token} role={data.user_role}>
+            <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData}>
               <JoyOrderDashboardTemplate user_full_name={data.full_name} user_email={data.email} role={data.user_role} removeData={removeData} />
             </ProtectedRoute>
           }
@@ -43,7 +65,7 @@ function Router() {
           <Route
             path="groups"
             element={
-              <ProtectedRoute token={data.access_token} role={data.user_role} requiredRoles={['admin']}>
+              <ProtectedRoute token={data.access_token} role={data.user_role}removeData={removeData} requiredRoles={['admin']}>
                 <GroupTable token={data.access_token} />
               </ProtectedRoute>
             }
@@ -51,7 +73,7 @@ function Router() {
           <Route
             path="users"
             element={
-              <ProtectedRoute token={data.access_token} role={data.user_role} requiredRoles={['admin']}>
+              <ProtectedRoute token={data.access_token} role={data.user_role}removeData={removeData} requiredRoles={['admin']}>
                 <UserTable token={data.access_token} />
               </ProtectedRoute>
             }

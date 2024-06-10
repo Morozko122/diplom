@@ -107,7 +107,7 @@ def get_users():
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_users_id(user_id):
     users = User.query.filter_by(id = user_id).first()
     users_list = {

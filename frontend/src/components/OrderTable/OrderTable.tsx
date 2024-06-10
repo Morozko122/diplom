@@ -45,6 +45,14 @@ export default function OrderTable({ token, role }) {
   const handleOpenEdit = () => setOpenEdit(true);
   const handleCloseEdit = () => setOpenEdit(false);
 
+  const headers = {
+    headers:
+    {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': `application/json`
+    }
+  }
+
   const handleRowClick = (row) => {
     setSelectedRow(row);
     handleOpenEdit()
@@ -68,13 +76,9 @@ export default function OrderTable({ token, role }) {
       }
       else if (role  == 'hostel-employee') url = `${API_BASE_URL}/applicationDormitory/${selectedRow?.id}`
       const response = await axios.put(url, {
-        headers:
-        {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': `application/json`
-        },
+       
         "status":newStatus
-      });
+      }, headers);
       handleCloseEdit();
       fetchApplication(userId);
     } catch (error) {
@@ -90,13 +94,7 @@ export default function OrderTable({ token, role }) {
         url = `${API_BASE_URL}/methodologists/${id}/applications`;
       }
       else if (role  == 'hostel-employee') url = `${API_BASE_URL}/workers/${id}/applications`
-      const response = await axios.get(url, {
-        headers:
-        {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': `application/json`
-        }
-      });
+      const response = await axios.get(url,headers);
       setRow(response.data);
     } catch (error) {
       console.error('Error fetching:', error);
