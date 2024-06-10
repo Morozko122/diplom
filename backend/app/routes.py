@@ -174,7 +174,6 @@ def add_user():
         group_id = data.get('group_id')
         group = Group.query.filter_by(id=group_id).first()
         query_id_select = app.security.datastore.find_user(email=new_user.email)
-        #query_id_select = User.query.filter_by(email=new_user.email).first() # переделать под datastore
         if not group:
             return jsonify({"error": "Invalid group name"}), 400
         
@@ -197,7 +196,7 @@ def add_user():
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
 
 @app.route('/users/<int:user_id>/full', methods=['PUT'])
-@jwt_required()
+
 def edit_user_full(user_id):
     data = request.json
     
@@ -209,8 +208,11 @@ def edit_user_full(user_id):
     existing_user = app.security.datastore.find_user(id=user_id)
     print(existing_user)
     for key, value in data.items():
-        if hasattr(existing_user, key) and (key == "password" and value !='') and value !='':
+        if hasattr(existing_user, key) and (key != "password" and value !='') and value !='':
             setattr(existing_user, key, value)
+        elif key == "password" and value !='':
+            setattr(existing_user, key, hash_password(value))
+            
     db_session.commit()
     
    
@@ -326,8 +328,9 @@ def get_applications_for_methodologist(methodologist_id):
 @app.route('/methodologists', methods=['GET'])
 def get_methodologists():
     role = app.security.datastore.find_role('methodologist')
-    role_users = RolesUsers.query.filter_by(role_id = role.id).first()
-    methodologists = User.query.filter_by(id = role_users.user_id).all()
+    role_users = RolesUsers.query.filter_by(role_id=role.id).all()
+    user_ids = [role_user.user_id for role_user in role_users]
+    methodologists = User.query.filter(User.id.in_(user_ids)).all()
     
     methodologists_list = [
         {

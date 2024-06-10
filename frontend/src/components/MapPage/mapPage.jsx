@@ -1,55 +1,119 @@
-import  { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
-import { API_BASE_URL } from '../../../config';
+import React, { useState, useRef } from 'react';
+import { Stage, Layer, Image, Ellipse, Text } from 'react-konva';
+import useImage from 'use-image';
 
-const FileUpload = () => {
-    const [file, setFile] = useState(null);
-    const [preview, setPreview] = useState(null);
+const AnnotatedImage = ({ src }) => {
+  const [image] = useImage(src);
+  const [annotations, setAnnotations] = useState([]);
+  const [text, setText] = useState('');
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const stageRef = useRef(null);
 
-    const onDrop = (acceptedFiles) => {
-        const uploadedFile = acceptedFiles[0];
-        setFile(uploadedFile);
-        setPreview(URL.createObjectURL(uploadedFile));
+  const handleStageClick = (e) => {
+    const stage = stageRef.current;
+    const pointerPosition = stage.getPointerPosition();
+    const mousePointTo = {
+      x: (pointerPosition.x - stage.x()) / stage.scaleX(),
+      y: (pointerPosition.y - stage.y()) / stage.scaleY()
+    };
+    setAnnotations([
+      ...annotations,
+      {
+        x: mousePointTo.x,
+        y: mousePointTo.y,
+        text: text
+      }
+    ]);
+    setText('');
+  };
+
+  const handleWheel = (e) => {
+    e.evt.preventDefault();
+    const scaleBy = 1.1;
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    setScale(newScale);
+    setPosition({
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale
+    });
+  };
 
-    const handleUpload = () => {
-        const formData = new FormData();
-        formData.append('file', file);
+  const handleSave = () => {
+    const uri = stageRef.current.toDataURL();
+    const link = document.createElement('a');
+    link.download = 'annotated-image.png';
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-        axios.post(`${API_BASE_URL}/upload`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })
-        .then(response => {
-            console.log('File uploaded successfully', response.data);
-        })
-        .catch(error => {
-            console.error('Error uploading file', error);
-        });
-    };
-
-    return (
-        <div>
-            <div {...getRootProps()} style={{ border: '1px dashed gray', padding: '20px', textAlign: 'center' }}>
-                <input {...getInputProps()} />
-                <p>Загрузите файл карты</p>
-            </div>
-            {preview && (
-                <div>
-                    <img src={preview} alt="Preview" style={{ marginTop: '20px', maxHeight: '400px' }} />
-                </div>
-            )}
-            {file && (
-                <button onClick={handleUpload} style={{ marginTop: '20px' }}>
-                    Upload File
-                </button>
-            )}
-        </div>
-    );
+  return (
+    <div>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Enter text"
+      />
+      <button onClick={handleSave}>Save Image</button>
+      <Stage
+        width={window.innerWidth}
+        height={window.innerHeight}
+        scaleX={scale}
+        scaleY={scale}
+        x={position.x}
+        y={position.y}
+        ref={stageRef}
+        onWheel={handleWheel}
+        draggable
+        onClick={handleStageClick}
+      >
+        <Layer>
+          <Image image={image} x={0} y={0} />
+          {annotations.map((annotation, index) => (
+            <React.Fragment key={index}>
+              <Ellipse
+                x={annotation.x}
+                y={annotation.y}
+                radiusX={50}
+                radiusY={25}
+                stroke="red"
+                strokeWidth={4 / scale}
+              />
+              <Text
+                x={annotation.x - 10}
+                y={annotation.y - 10}
+                text={annotation.text}
+                fontSize={20}
+                fill="white"
+              />
+            </React.Fragment>
+          ))}
+        </Layer>
+      </Stage>
+    </div>
+  );
 };
 
-export default FileUpload;
+const App = () => {
+  const imageUrl = 'https://ock-ola.mag.muzkult.ru/media/2018/08/11/1227224835/image_image_3599394.png'; // Replace with your image URL
+
+  return (
+    <div>
+      <AnnotatedImage src={imageUrl} />
+    </div>
+  );
+};
+
+export default App;
