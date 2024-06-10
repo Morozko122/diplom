@@ -46,6 +46,7 @@ def check():
 
 #______________Роли_____________________#
 @app.route('/roles', methods=['GET'])
+@roles_required(['admin'])
 def get_roles():
     roles = Role.query.all()
     roles_list = [
@@ -60,6 +61,7 @@ def get_roles():
     return jsonify(roles_list)
 
 @app.route('/roles', methods=['POST'])
+@roles_required(['admin'])
 def add_role():
     data = request.json
     new_role = Role(
@@ -73,6 +75,7 @@ def add_role():
     return jsonify({"message": "Role added", "role": new_role.name})
 
 @app.route('/roles/<int:role_id>', methods=['PUT'])
+@roles_required(['admin'])
 def edit_role(role_id):
     data = request.json
     role = Role.query.filter_by(id =role_id)
@@ -87,7 +90,7 @@ def edit_role(role_id):
 #______________Users_____________________#
 
 @app.route('/users', methods=['GET'])
-@jwt_required()
+@roles_required('admin')
 def get_users():
     users = User.query.all()
     users_list = [
@@ -104,7 +107,7 @@ def get_users():
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>', methods=['GET'])
-@jwt_required()
+@jwt_required
 def get_users_id(user_id):
     users = User.query.filter_by(id = user_id).first()
     users_list = {
@@ -117,7 +120,7 @@ def get_users_id(user_id):
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>/fullinfo', methods=['GET'])
-@jwt_required()
+@roles_required('admin')
 def get_users_id_full_info(user_id):
     users = User.query.filter_by(id = user_id).first()
     
@@ -142,7 +145,7 @@ def get_users_id_full_info(user_id):
     return jsonify(users_list)
 
 @app.route('/users', methods=['POST'])
-@jwt_required()
+@roles_required('admin')
 def add_user():
     data = request.json
     role_name = data.get('role')
@@ -196,7 +199,7 @@ def add_user():
     return jsonify({"message": "User and role-specific entity added", "user": new_user.email})
 
 @app.route('/users/<int:user_id>/full', methods=['PUT'])
-
+@roles_required('admin')
 def edit_user_full(user_id):
     data = request.json
     
@@ -220,7 +223,7 @@ def edit_user_full(user_id):
     return jsonify({"message": "User updated", "user": existing_user.email})
 
 @app.route('/users/<int:user_id>', methods=['PUT'])
-@jwt_required()
+@roles_required('admin')
 def edit_user(user_id):
     data = request.json
     user = User.query.filter_by(id = user_id)
@@ -236,6 +239,7 @@ def edit_user(user_id):
 #______________Справки_____________________#
 
 @app.route('/get_applications/<int:student_code>', methods=['GET'])
+@roles_required('admin', 'methodologist', 'student')
 def get_applications(student_code):
     applications = Application.query.filter_by(personal_number=student_code).all()
     if not applications:
@@ -254,6 +258,7 @@ def get_applications(student_code):
     return jsonify(result), 200
 
 @app.route('/applications/add', methods=['POST'])
+@roles_required('admin', 'student')
 def add_application():
     data = request.json
     personal_number = data.get('personal_number')
@@ -275,6 +280,7 @@ def add_application():
     return jsonify({"message": "Application added successfully"}), 201
 
 @app.route('/update_application/<int:application_id>', methods=['PUT'])
+@roles_required('admin', 'methodologist')
 def update_application(application_id):
     # Get the data from the request
     data = request.json
@@ -301,7 +307,7 @@ def update_application(application_id):
 
 #______________Методисты_____________________#
 @app.route('/methodologists/<int:methodologist_id>/applications', methods=['GET'])
-@jwt_required()
+@roles_required('admin', 'methodologist')
 def get_applications_for_methodologist(methodologist_id):
     #methodologist = Methodologist.query.filter_by(id=methodologist_id).all()
    
@@ -326,12 +332,12 @@ def get_applications_for_methodologist(methodologist_id):
     return jsonify(applications)
 
 @app.route('/methodologists', methods=['GET'])
+@roles_required('admin')
 def get_methodologists():
     role = app.security.datastore.find_role('methodologist')
     role_users = RolesUsers.query.filter_by(role_id=role.id).all()
     user_ids = [role_user.user_id for role_user in role_users]
     methodologists = User.query.filter(User.id.in_(user_ids)).all()
-    
     methodologists_list = [
         {
             'id': methodologist.id,
@@ -371,6 +377,7 @@ ApplicationDormitory.serialize = serialize_application
 
 @app.route('/workers', methods=['GET'])
 @app.route('/workers/<int:id>', methods=['GET'])
+@roles_required('admin')
 def get_workers(id=None):
     if id:
         worker = DormitoryWorker.query.get(id)
@@ -381,6 +388,7 @@ def get_workers(id=None):
     return jsonify([worker.serialize() for worker in workers])
 
 @app.route('/workers', methods=['POST'])
+@roles_required('admin')
 def add_worker():
     data = request.get_json()
     worker = DormitoryWorker(
@@ -393,6 +401,7 @@ def add_worker():
     return jsonify(worker.serialize())
 
 @app.route('/workers/<int:id>', methods=['PUT'])
+@roles_required('admin')
 def edit_worker(id):
     data = request.get_json()
     worker = DormitoryWorker.query.get(id)
@@ -405,6 +414,7 @@ def edit_worker(id):
     return jsonify(worker.serialize())
 
 @app.route('/workers/<int:id>/applications', methods=['GET'])
+@roles_required('admin', 'hostel-employee')
 def get_worker_app(id):
     worker = DormitoryWorker.query.filter_by(user_id = id).first()
     if not worker:
@@ -425,6 +435,7 @@ def get_worker_app(id):
     
 @app.route('/applicationDormitory', methods=['GET'])
 @app.route('/applicationDormitory/<int:id>', methods=['GET'])
+@roles_required('admin', 'hostel-employee')
 def get_applicationDormitory(id=None):
     if id:
         application = ApplicationDormitory.query.get(id)
@@ -435,6 +446,7 @@ def get_applicationDormitory(id=None):
     return jsonify([app.serialize() for app in applications])
 
 @app.route('/applicationDormitory/student/<int:id>', methods=['GET'])
+@roles_required('admin', 'hostel-employee', 'student')
 def get_applicationDormitory_std(id):
     
     if id:
@@ -457,6 +469,7 @@ def get_applicationDormitory_std(id):
         
 
 @app.route('/applicationDormitory/add', methods=['POST'])
+@roles_required('admin', 'student')
 def add_applicationDormitory():
     data = request.get_json()
     application = ApplicationDormitory(
@@ -473,6 +486,7 @@ def add_applicationDormitory():
     return jsonify({"message": "Application added successfully"}), 201
 
 @app.route('/applicationDormitory/<int:id>', methods=['PUT'])
+@roles_required('admin', 'hostel-employee')
 def edit_applicationDormitory(id):
     data = request.get_json()
     application = ApplicationDormitory.query.get(id)
@@ -491,6 +505,8 @@ def edit_applicationDormitory(id):
 #______________Группы_____________________#
 
 @app.route('/groups', methods=['POST'])
+@roles_required('admin')
+
 def add_group():
     data = request.json
     new_group = Group(
@@ -502,6 +518,7 @@ def add_group():
     return jsonify({"message": "Group added", "group": new_group.name})
 
 @app.route('/groups', methods=['GET'])
+@roles_required('admin')
 def get_group():
     groups = Group.query.all()
     groups_list =  [
@@ -519,6 +536,7 @@ def get_group():
 
 
 @app.route('/generate_qr/<int:id>', methods=['GET'])
+@roles_required('admin', 'student')
 def generate_qr(id):
     
     student = Student.query.get(id)
@@ -529,8 +547,9 @@ def generate_qr(id):
         
     return {'message': 'В доступе отказано'}, 401
 
-@jwt_required()
+# @jwt_required()
 @app.route('/enter_dormitory', methods=['GET'])
+@roles_required('admin', 'student')
 def enter_dormitory():
     verify_jwt_in_request()
     id = get_jwt_identity()

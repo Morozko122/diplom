@@ -1,0 +1,10 @@
+alembic==1.13.1
+Flask==3.0.3
+Flask_Cors==4.0.1
+Flask_JWT_Extended==4.6.0
+Flask_Migrate==4.0.7
+Flask_Security_Too==5.4.3
+flask_sqlalchemy==3.1.1
+Pillow==10.3.0
+PyQRCode==1.2.1
+SQLAlchemy==2.0.30

@@ -107,7 +107,7 @@ export default function UserTable({token}) {
         try {
             var response;
             if(selectedRow&& selectedRow.id != null) {
-                response = await axios.put(`${API_BASE_URL}/users/${selectedRow.id}/full`,formJson,headers);
+                response = await axios.put(`${API_BASE_URL}/users/${selectedRow.id}/full`, formJson, headers);
             }
             else response = await axios.post(`${API_BASE_URL}/users`, formJson, headers);
             console.log(response.data);
