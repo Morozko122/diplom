@@ -28,7 +28,14 @@ import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 import CustomTable from '../Table/CustomTableComponents'; 
 import { API_BASE_URL } from '../../../config';
 
-export default function GroupTable() {
+export default function GroupTable({token}) {
+    const headers = {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `application/json`
+        }
+      }
     const [rows, setRow] = useState([]);
     const [openGroup, setGroupOpen] = useState(false);
 
@@ -43,7 +50,7 @@ export default function GroupTable() {
         const formDatas = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formDatas as any).entries());
         try {
-            await axios.post(`${API_BASE_URL}/groups`, formJson);
+            await axios.post(`${API_BASE_URL}/groups`, formJson, headers);
 
             handleGroupClose();
             fetchGroups();
@@ -54,7 +61,7 @@ export default function GroupTable() {
 
     const fetchMethodologists = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/methodologists`);
+            const response = await axios.get(`${API_BASE_URL}/methodologists`, headers);
             setMethodologists(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
@@ -63,7 +70,7 @@ export default function GroupTable() {
     
     const fetchGroups = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/groups`);
+            const response = await axios.get(`${API_BASE_URL}/groups`, headers);
             setGroups(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
