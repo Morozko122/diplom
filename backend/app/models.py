@@ -86,7 +86,7 @@ from sqlalchemy import Boolean, DateTime, Column, Integer, String, ForeignKey
 class RolesUsers(Base):
     __tablename__ = 'roles_users'
     id = Column(Integer(), primary_key=True)
-    user_id = Column('user_id', Integer(), ForeignKey('user.id'))
+    user_id = Column('user_id', Integer(), ForeignKey('user.id',ondelete='CASCADE'))
     role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
 class Role(Base, RoleMixin):
@@ -105,16 +105,16 @@ class User(Base, UserMixin):
     active = Column(Boolean())
     fs_uniquifier = Column(String(64), unique=True, nullable=False)
     
-    roles = relationship('Role', secondary='roles_users', backref=backref('users', lazy='dynamic'))
-    group = relationship('Group', back_populates='users')
-    student = relationship('Student', uselist=False, back_populates='user')
-    dormitoryWorker = relationship('DormitoryWorker',uselist=False, back_populates='userss')
+    roles = relationship('Role', secondary='roles_users', backref=backref('users', lazy='dynamic'),passive_deletes=True)
+    group = relationship('Group', back_populates='users',passive_deletes=True)
+    student = relationship('Student', uselist=False, back_populates='user',passive_deletes=True)
+    dormitoryWorker = relationship('DormitoryWorker',uselist=False, back_populates='userss',passive_deletes=True)
 
 class Group(Base):
     __tablename__ = 'group'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+    user_id = Column(Integer, ForeignKey('user.id',ondelete='SET NULL'), nullable=True)
     
     users = relationship("User", back_populates="group")
     students = relationship("Student", back_populates="group")
@@ -123,17 +123,17 @@ class Group(Base):
 class Student(Base):
     __tablename__ = 'student'
     group_id = Column(Integer, ForeignKey('group.id'))
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id',ondelete='CASCADE'), nullable=False, primary_key=True)
     liveInDormitory = Column(Boolean, nullable=False)
     group = relationship("Group", back_populates="students")
-    applications = relationship("Application", back_populates="student")
-    applicationDormitory = relationship("ApplicationDormitory", back_populates="student")
+    applications = relationship("Application", back_populates="student", passive_deletes=True)
+    applicationDormitory = relationship("ApplicationDormitory", back_populates="student",passive_deletes=True)
     user = relationship("User", back_populates="student")
-    studentInDormitory = relationship("StudentInDormitory",uselist=False, back_populates="student")
+    studentInDormitory = relationship("StudentInDormitory",uselist=False, back_populates="student",passive_deletes=True)
     
 class StudentInDormitory(Base):
      __tablename__ = 'studentInDormitory'
-     user_id = Column(Integer, ForeignKey('student.user_id'), nullable=False, primary_key=True)
+     user_id = Column(Integer, ForeignKey('student.user_id',ondelete='CASCADE'), nullable=False, primary_key=True)
      numberDormitory = Column(Integer, nullable=False)
      numberRoom= Column(Integer, nullable=False)
      student = relationship("Student",uselist=False, back_populates="studentInDormitory")
@@ -141,17 +141,17 @@ class StudentInDormitory(Base):
 class Application(Base):
     __tablename__ = 'application'
     id = Column(Integer, primary_key=True)
-    personal_number = Column(Integer, ForeignKey('student.user_id'))
+    personal_number = Column(Integer, ForeignKey('student.user_id',ondelete='CASCADE'))
     name = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
     status = Column(String, nullable=False)
-    date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    date = Column(DateTime, nullable=False, default=datetime.utcnow())
     student = relationship("Student", back_populates="applications")
     
 class DormitoryWorker(Base):
      __tablename__ = 'dormitoryWorker'
      id = Column(Integer, primary_key=True)
-     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+     user_id = Column(Integer, ForeignKey('user.id',ondelete='CASCADE'), nullable=False)
      numberDormitory = Column(Integer, nullable=False)
      typeSpecialist = Column(String, nullable=False)
      userss = relationship("User", back_populates="dormitoryWorker")
@@ -159,7 +159,7 @@ class DormitoryWorker(Base):
 class ApplicationDormitory(Base):
     __tablename__ = 'applicationDormitory'
     id = Column(Integer, primary_key=True)
-    personal_number = Column(Integer, ForeignKey('student.user_id'))
+    personal_number = Column(Integer, ForeignKey('student.user_id',ondelete='CASCADE'))
     description = Column(String, nullable=False)
     typeSpecialist = Column(String, nullable=False)
     numberDormitory = Column(Integer, nullable=False)

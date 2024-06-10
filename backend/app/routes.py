@@ -120,7 +120,7 @@ def get_users_id(user_id):
     return jsonify(users_list)
 
 @app.route('/users/<int:user_id>/fullinfo', methods=['GET'])
-@roles_required('admin')
+@jwt_required()
 def get_users_id_full_info(user_id):
     users = User.query.filter_by(id = user_id).first()
     
@@ -217,6 +217,31 @@ def edit_user_full(user_id):
             setattr(existing_user, key, hash_password(value))
             
     db_session.commit()
+    if role_name == 'student':
+        group_id = data.get('group_id')
+        group = Group.query.filter_by(id=group_id).first()
+        
+        if not group:
+            return jsonify({"error": "Invalid group name"}), 400
+        student = Student.query.filter_by(user_id=user_id).first()
+        for key, value in data.items():
+            if hasattr(student, key)and (key != "liveInDormitory" and value !='') and value !='':
+                setattr(student, key, value)
+            elif key == "liveInDormitory" and value !='':
+                print(data.get('liveInDormitory') == 'True')
+                setattr(existing_user, key, data.get('liveInDormitory') == 'True')
+        if(data.get('liveInDormitory') == 'True'):
+            studentD = StudentInDormitory.query.filter_by(user_id=user_id).first()
+            for key, value in data.items():
+                if hasattr(studentD, key) and value !='':
+                    setattr(studentD, key, value)
+    elif role_name == 'hostel-employee':
+        worker = DormitoryWorker.query.filter_by(user_id=user_id).first()
+        for key, value in data.items():
+                if hasattr(worker, key) and value !='':
+                    setattr(worker, key, value)
+
+    db_session.commit()
     
    
 
@@ -232,6 +257,8 @@ def edit_user(user_id):
         if hasattr(user, key):
             setattr(user, key, value)
     db_session.commit()
+    
+    
     return jsonify({"message": "User updated", "user": user.email})
 
 #___________________________________#

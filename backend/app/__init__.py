@@ -32,6 +32,15 @@ with app.app_context():
     app.security.datastore.find_or_create_role(
         name="admin", permissions={"admin-read", "admin-write"}
     )
+    app.security.datastore.find_or_create_role(
+        name="methodologist", permissions={"admin-read", "admin-write"}
+    )
+    app.security.datastore.find_or_create_role(
+        name="hostel-employee", permissions={"admin-read", "admin-write"}
+    )
+    app.security.datastore.find_or_create_role(
+        name="student", permissions={"admin-read", "admin-write"}
+    )
     db_session.commit()
     if not app.security.datastore.find_user(email="xeui@cm.cd"):
         app.security.datastore.create_user(email="xeui@cm.cd",
