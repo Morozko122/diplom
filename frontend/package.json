@@ -22,7 +22,8 @@
     "react-dropzone": "^14.2.3",
     "react-konva": "^18.2.10",
     "react-konva-utils": "^1.0.6",
-    "react-router-dom": "^6.23.0"
+    "react-router-dom": "^6.23.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
