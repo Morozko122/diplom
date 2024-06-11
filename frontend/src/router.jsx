@@ -26,14 +26,14 @@ const checkToken = async (token, removeData) => {
     await axios.get(`${API_BASE_URL}/check_token`, headers);
     return 200;
   }
-  catch (e){
+  catch (e) {
     removeData();
     return e.response.status;
   }
-  
+
 };
 
-function ProtectedRoute({ token, role, requiredRoles , removeData, children }) {
+function ProtectedRoute({ token, role, requiredRoles, removeData, children }) {
   checkToken(token, removeData);
   if (!token || token === "" || token === undefined) {
     return <Navigate to="/login" replace />;
@@ -65,7 +65,7 @@ function Router() {
           <Route
             path="groups"
             element={
-              <ProtectedRoute token={data.access_token} role={data.user_role}removeData={removeData} requiredRoles={['admin']}>
+              <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData} requiredRoles={['admin']}>
                 <GroupTable token={data.access_token} />
               </ProtectedRoute>
             }
@@ -73,19 +73,20 @@ function Router() {
           <Route
             path="users"
             element={
-              <ProtectedRoute token={data.access_token} role={data.user_role}removeData={removeData} requiredRoles={['admin']}>
+              <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData} requiredRoles={['admin']}>
                 <UserTable token={data.access_token} />
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="map"
             element={
-                <FileUpload />
+              <FileUpload />
             }
           />
+
         </Route>
-        
+
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
