@@ -2,10 +2,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Image, Ellipse, Text, Group } from 'react-konva';
 import useImage from 'use-image';
-import Modal from '@mui/joy/Modal';
+import { ModalClose, ModalDialog, Modal, FormControl, FormLabel } from '@mui/joy';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
-import { Input } from '@mui/joy';
+import { Input } from '@mui/joy'; 
 import Button from '@mui/joy/Button';
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
@@ -393,48 +393,54 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
         </List>
       </Box>
       <Modal open={modalIsOpen} onClose={closeModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" component="h2">
-            Edit Annotation
-          </Typography>
-          <Input
-            label="Title"
-            name="text"
-            value={text}
-            onChange={handleAnnotationChange}
-            fullWidth
-            margin="normal"
-          />
-          <Input
-            label="Description"
-            name="description"
-            value={description}
-            onChange={handleAnnotationChange}
-            fullWidth
-            margin="normal"
-          />
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" onClick={handleAnnotationSave}>
-              Save
-            </Button>
-            <Button variant="outlined" onClick={closeModal}>
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
+          <ModalDialog
+                aria-labelledby="edit-annotation-modal"
+                aria-describedby="edit-annotation-modal-description"
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '400px',
+                  maxWidth: '100%',
+              }}
+            >
+                <ModalClose onClick={closeModal} />
+                <Typography id="edit-annotation-modal" level="h6" component="h2">
+                    Редактировать метку
+                </Typography>
+                <form>
+                    <FormControl sx={{ mt: 2 }}>
+                        <FormLabel>Наименование</FormLabel>
+                        <Input
+                            type="text"
+                            name="text"
+                            value={text}
+                            onChange={handleAnnotationChange}
+                            required
+                        />
+                    </FormControl>
+                    <FormControl sx={{ mt: 2 }}>
+                        <FormLabel>Описание</FormLabel>
+                        <Input
+                            type="text"
+                            name="description"
+                            value={description}
+                            onChange={handleAnnotationChange}
+                            required
+                        />
+                    </FormControl>
+                    <Box mt={2} display="flex" justifyContent="space-between">
+                        <Button type="button" variant="solid" color="primary" sx={{ mt: 2 }} onClick={handleAnnotationSave}>
+                            Сохранить
+                        </Button>
+                        <Button type="button" variant="solid" color="primary" sx={{ mt: 2 }} onClick={closeModal}>
+                            Отмена
+                        </Button>
+                    </Box>
+                </form>
+            </ModalDialog>
+        </Modal>
     </Box>
     </>
   );
