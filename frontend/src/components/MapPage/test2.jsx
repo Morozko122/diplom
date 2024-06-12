@@ -513,41 +513,62 @@ const App = () => {
       console.error('Error fetching annotations:', error);
     }
   };
-
+  const styles = {
+    listItem: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      border: '1px solid black',
+      borderRadius: '10px',
+      padding: '10px',
+      marginBottom: '10px',
+      '&:hover': {
+        backgroundColor: '#f5f5f5',
+        cursor: 'pointer',
+      },
+    },
+    filenameBox: {
+      border: '1px solid black',
+      borderRadius: '5px',
+      padding: '5px 10px',
+      marginRight: '20px',
+      backgroundColor: '#fff', // White background
+    },
+    filenameText: {
+      fontWeight: 'bold',
+    },
+    deleteIcon: {
+      color: 'red', // Red color for the delete icon
+    },
+  };
   return (
     <Box sx={{ p: 3 }}>
-        {(!selectedImage && isNew != true) && (
+      {!selectedImage && isNew !== true && (
         <>
-        <Typography level="h2">Редактор карты</Typography>
-      <Button onClick={() => setisNew(true)}>Создать</Button>
-      <List sx={{ mt: 3 }}>
-        {images.map((image) => (
-          <ListItem key={image.filename}>
-            <ListItemButton onClick={() => handleImageClick(image)}>
-              <Typography>{image.filename}</Typography>
-            </ListItemButton>
-            <IconButton
-              aria-label="Delete"
-              size="sm"
-              color="danger"
-              onClick={() => console.log('Delete functionality not implemented')}
-            >
-              <Delete />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
-      
+          <Typography level="h2">Редактор карты</Typography>
+          <Button onClick={() => setisNew(true)}>Создать</Button>
+          <List sx={{ mt: 3 }}>
+            {images.map((image) => (
+              <ListItem key={image.filename} sx={styles.listItem} onClick={() => handleImageClick(image)}>
+                <Box sx={styles.filenameBox}>
+                  <Typography sx={styles.filenameText}>{image.filename}</Typography>
+                </Box>
+                <Typography>Корпус 1, Этаж 1</Typography>
+                <IconButton
+                  aria-label="Delete"
+                  size="large"
+                  sx={styles.deleteIcon}
+                  onClick={() => console.log('Delete functionality not implemented')}
+                >
+                  <Delete />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
         </>
-        
       )}
-      { isNew == true && (
-        <NewMap></NewMap>
-      )
-      }
-      
+      {isNew === true && <NewMap />}
       {selectedImage && (
-        
         <AnnotatedImage src={selectedImage.src} initialAnnotations={selectedImage.annotations} />
       )}
     </Box>
