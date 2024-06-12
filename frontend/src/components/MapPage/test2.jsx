@@ -2,10 +2,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Image, Ellipse, Text, Group } from 'react-konva';
 import useImage from 'use-image';
-import Modal from '@mui/joy/Modal';
+import { ModalClose, ModalDialog, Modal, FormControl, FormLabel } from '@mui/joy';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
-import { Input } from '@mui/joy';
+import { Input } from '@mui/joy'; 
 import Button from '@mui/joy/Button';
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
@@ -293,156 +293,162 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
 
   return (
     <>
-      <Box sx={{ display: 'flex', flex: 2, height: '90vh', overflow: 'hidden' }}>
-        <Box sx={{ flex: 3, overflow: 'hidden', padding: '5px', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', marginBottom: '10px' }}>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginRight: '10px' }}>
-              <label>Данные метки</label>
-              <Input
-                type="text"
-                name="text"
-                value={text}
-                onChange={handleAnnotationChange}
-                placeholder="Название метки"
-                sx={{ marginBottom: '10px' }}
-              />
-              <Input
-                type="text"
-                name="description"
-                value={description}
-                onChange={handleAnnotationChange}
-                placeholder="Описание метки"
-                sx={{ marginBottom: '10px' }}
-              />
-            </Box>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
-              <label>Данные карты</label>
-              <Input
-                type="text"
-                name="numberCampus"
-                value={numberCampus}
-                onChange={handleAnnotationChange}
-                placeholder="Номер корпуса"
-                sx={{ marginBottom: '10px' }}
-              />
-              <Input
-                type="text"
-                name="numberFloor"
-                value={numberFloor}
-                onChange={handleAnnotationChange}
-                placeholder="Номер этажа"
-                sx={{ marginBottom: '10px' }}
-              />
-            </Box>
-          </Box>
-          <Button onClick={handleSave}>Сохранить</Button>
-          <Stage
-            width={900}
-            height={900}  // Adjust height to prevent overflow
-            scaleX={scale}
-            scaleY={scale}
-            x={position.x}
-            y={position.y}
-            ref={stageRef}
-            onWheel={handleWheel}
-            draggable
-            onClick={handleStageClick}
-            style={{ flex: 1 }} // Ensure it flexes with its parent
-          >
-            <Layer>
-              <Image image={image} x={0} y={0} />
-              {annotations.map((annotation) => (
-                <Group
-                  key={annotation.id}
-                  x={annotation.x}
-                  y={annotation.y}
-                  draggable
-                  onDragEnd={(e) => handleDragEnd(e, annotation.id)}
-                >
-                  <Ellipse
-                    x={0}
-                    y={0}
-                    radiusX={50}
-                    radiusY={25}
-                    stroke="red"
-                    strokeWidth={2}
-                    draggable={false}
-                  />
-                  <Text
-                    x={-20}
-                    y={-10}
-                    text={annotation.text}
-                    fontSize={20}
-                    fill="black"
-                    draggable={false}
-                  />
-                </Group>
-              ))}
-            </Layer>
-          </Stage>
-        </Box>
-        <Box sx={{ width: '200px', padding: '10px', borderLeft: '1px solid black', overflowY: 'auto' }}>
-          <List sx={{ maxWidth: 300 }}>
+        <Box sx={{ display: 'flex', flex: 2, height: '90vh', overflow: 'hidden' }}>
+      <Box sx={{ flex: 3, overflow: 'hidden', padding: '5px', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', marginBottom: '10px' }}>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginRight: '10px' }}>
+      <label>Данные метки</label>
+      <Input
+        type="text"
+        name="text"
+        value={text}
+        onChange={handleAnnotationChange}
+        placeholder="Название метки"
+        sx={{ marginBottom: '10px' }}
+      />
+      <Input
+        type="text"
+        name="description"
+        value={description}
+        onChange={handleAnnotationChange}
+        placeholder="Описание метки"
+        sx={{ marginBottom: '10px' }}
+      />
+    </Box>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
+      <label>Данные карты</label>
+      <Input
+        type="text"
+        name="numberCampus"
+        value={numberCampus}
+        onChange={handleAnnotationChange}
+        placeholder="Номер корпуса"
+        sx={{ marginBottom: '10px' }}
+      />
+      <Input
+        type="text"
+        name="numberFloor"
+        value={numberFloor}
+        onChange={handleAnnotationChange}
+        placeholder="Номер этажа"
+        sx={{ marginBottom: '10px' }}
+      />
+    </Box>
+  </Box>
+        <Button onClick={handleSave}>Сохранить</Button>
+        <Stage
+          width={900}
+          height={900}  // Adjust height to prevent overflow
+          scaleX={scale}
+          scaleY={scale}
+          x={position.x}
+          y={position.y}
+          ref={stageRef}
+          onWheel={handleWheel}
+          draggable
+          onClick={handleStageClick}
+          style={{ flex: 1 }} // Ensure it flexes with its parent
+        >
+          <Layer>
+            <Image image={image} x={0} y={0} />
             {annotations.map((annotation) => (
-              <ListItem
+              <Group
                 key={annotation.id}
-                endAction={
-                  <IconButton aria-label="Delete" size="sm" color="danger" onClick={() => handleDeleteAnnotation(annotation.id)}>
-                    <Delete />
-                  </IconButton>
-                }
+                x={annotation.x}
+                y={annotation.y}
+                draggable
+                onDragEnd={(e) => handleDragEnd(e, annotation.id)}
               >
-                <ListItemButton onClick={() => handleEditAnnotation(annotation.id)}>
-                  <p color="black">{annotation.text}</p>
-                </ListItemButton>
-              </ListItem>
+                <Ellipse
+                  x={0}
+                  y={0}
+                  radiusX={50}
+                  radiusY={25}
+                  stroke="red"
+                  strokeWidth={2}
+                  draggable={false}
+                />
+                <Text
+                  x={-20}
+                  y={-10}
+                  text={annotation.text}
+                  fontSize={20}
+                  fill="black"
+                  draggable={false}
+                />
+              </Group>
             ))}
-          </List>
-        </Box>
-        <Modal open={modalIsOpen} onClose={closeModal}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 400,
-              bgcolor: 'background.paper',
-              border: '2px solid #000',
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            <Typography variant="h6" component="h2">
-              Edit Annotation
-            </Typography>
-            <Input
-              label="Title"
-              name="text"
-              value={text}
-              onChange={handleAnnotationChange}
-              fullWidth
-              margin="normal"
-            />
-            <Input
-              label="Description"
-              name="description"
-              value={description}
-              onChange={handleAnnotationChange}
-              fullWidth
-              margin="normal"
-            />
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button variant="contained" onClick={handleAnnotationSave}>
-                Save
-              </Button>
-              <Button variant="outlined" onClick={closeModal}>
-                Cancel
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
+          </Layer>
+        </Stage>
       </Box>
+      <Box sx={{ width: '200px', padding: '10px', borderLeft: '1px solid black', overflowY: 'auto' }}>
+        <List sx={{ maxWidth: 300 }}>
+          {annotations.map((annotation) => (
+            <ListItem
+              key={annotation.id}
+              endAction={
+                <IconButton aria-label="Delete" size="sm" color="danger" onClick={() => handleDeleteAnnotation(annotation.id)}>
+                  <Delete />
+                </IconButton>
+              }
+            >
+              <ListItemButton onClick={() => handleEditAnnotation(annotation.id)}>
+                <p color="black">{annotation.text}</p>
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+      <Modal open={modalIsOpen} onClose={closeModal}>
+          <ModalDialog
+                aria-labelledby="edit-annotation-modal"
+                aria-describedby="edit-annotation-modal-description"
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '400px',
+                  maxWidth: '100%',
+              }}
+            >
+                <ModalClose onClick={closeModal} />
+                <Typography id="edit-annotation-modal" level="h6" component="h2">
+                    Редактировать метку
+                </Typography>
+                <form>
+                    <FormControl sx={{ mt: 2 }}>
+                        <FormLabel>Наименование</FormLabel>
+                        <Input
+                            type="text"
+                            name="text"
+                            value={text}
+                            onChange={handleAnnotationChange}
+                            required
+                        />
+                    </FormControl>
+                    <FormControl sx={{ mt: 2 }}>
+                        <FormLabel>Описание</FormLabel>
+                        <Input
+                            type="text"
+                            name="description"
+                            value={description}
+                            onChange={handleAnnotationChange}
+                            required
+                        />
+                    </FormControl>
+                    <Box mt={2} display="flex" justifyContent="space-between">
+                        <Button type="button" variant="solid" color="primary" sx={{ mt: 2 }} onClick={handleAnnotationSave}>
+                            Сохранить
+                        </Button>
+                        <Button type="button" variant="solid" color="primary" sx={{ mt: 2 }} onClick={closeModal}>
+                            Отмена
+                        </Button>
+                    </Box>
+                </form>
+            </ModalDialog>
+        </Modal>
+    </Box>
     </>
   );
 };
@@ -520,23 +526,51 @@ const App = () => {
       console.error('Error fetching annotations:', error);
     }
   };
-
+  const styles = {
+    listItem: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      border: '1px solid black',
+      borderRadius: '10px',
+      padding: '10px',
+      marginBottom: '10px',
+      '&:hover': {
+        backgroundColor: '#f5f5f5',
+        cursor: 'pointer',
+      },
+    },
+    filenameBox: {
+      border: '1px solid black',
+      borderRadius: '5px',
+      padding: '5px 10px',
+      marginRight: '20px',
+      backgroundColor: '#fff', // White background
+    },
+    filenameText: {
+      fontWeight: 'bold',
+    },
+    deleteIcon: {
+      color: 'red', // Red color for the delete icon
+    },
+  };
   return (
     <Box sx={{ p: 3 }}>
-      {(!selectedImage && isNew != true) && (
+      {!selectedImage && isNew !== true && (
         <>
           <Typography level="h2">Редактор карты</Typography>
           <Button onClick={() => setisNew(true)}>Создать</Button>
           <List sx={{ mt: 3 }}>
             {images.map((image) => (
-              <ListItem key={image.filename}>
-                <ListItemButton onClick={() => handleImageClick(image)}>
-                  <Typography>{image.filename}</Typography>
-                </ListItemButton>
+              <ListItem key={image.filename} sx={styles.listItem} onClick={() => handleImageClick(image)}>
+                <Box sx={styles.filenameBox}>
+                  <Typography sx={styles.filenameText}>{image.filename}</Typography>
+                </Box>
+                <Typography>Корпус 1, Этаж 1</Typography>
                 <IconButton
                   aria-label="Delete"
-                  size="sm"
-                  color="danger"
+                  size="large"
+                  sx={styles.deleteIcon}
                   onClick={() => console.log('Delete functionality not implemented')}
                 >
                   <Delete />
@@ -544,17 +578,10 @@ const App = () => {
               </ListItem>
             ))}
           </List>
-
         </>
-
       )}
-      {isNew == true && (
-        <NewMap></NewMap>
-      )
-      }
-
+      {isNew === true && <NewMap />}
       {selectedImage && (
-
         <AnnotatedImage src={selectedImage.src} initialAnnotations={selectedImage.annotations} />
       )}
     </Box>
