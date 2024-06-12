@@ -64,6 +64,7 @@ export default function UserTable({token}) {
     const [formData, setFormData] = useState({
 
     });
+    
     console.log(formData);
 
     const [selectedRow, setSelectedRow] = useState(null);
@@ -125,6 +126,15 @@ export default function UserTable({token}) {
             setGroups(response.data);
         } catch (error) {
             console.error('Error fetching methodologists:', error);
+        }
+    };
+    const handleDelete = async () => {
+        try {
+            const response = await axios.delete(`${API_BASE_URL}/users/${formData.id}`, headers);
+            handleClose();
+            fetchUser();
+        } catch (error) {
+            console.error('Error delete:', error);
         }
     };
 
@@ -404,14 +414,23 @@ export default function UserTable({token}) {
 
 
                         )}
-                        <Button
-                            type="submit"
-                            variant="solid"
-                            color="primary"
-                            sx={{ mt: 2 }}
-                        >
-                            Сохранить
-                        </Button>
+                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                <Button
+                    type="submit"
+                    variant="solid"
+                    color="primary"
+                >
+                    Сохранить
+                </Button>
+                <Button
+                    type="button"
+                    variant="solid"
+                    color="danger"
+                    onClick={handleDelete}
+                >
+                    Удалить
+                </Button>
+            </Box>
                     </form>
                 </ModalDialog>
             </Modal>

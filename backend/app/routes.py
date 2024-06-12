@@ -716,7 +716,7 @@ def upload_file():
     new_map = Map(
         filename = image_name,
         floor = floor,
-        сampus = campus,
+        campus = campus,
     )
     db_session.add(new_map)
     db_session.commit()
@@ -742,7 +742,7 @@ def get_images():
     return jsonify(images)
 
 @app.route('/maps', methods=['GET'])
-@roles_required('admin')
+
 def get_maps():
     maps = Map.query.all()
     maps_list = [

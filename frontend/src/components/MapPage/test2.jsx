@@ -469,7 +469,7 @@ const App = () => {
 
   const fetchImages = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/images`);
+      const response = await axios.get(`${API_BASE_URL}/maps`);
       setImages(response.data);
     } catch (error) {
       console.error('Error fetching images:', error);
@@ -506,9 +506,8 @@ const App = () => {
       // Разделить имя файла и расширение
       const parts = image.filename.split(".");
       const name = parts[0];
-      const extension = parts[1];
 
-      const newFilename = `${name}_base.${extension}`;
+      const newFilename = `${name}_base.jpg`;
       const imageResponse = await axios.get(`${API_BASE_URL}/files/${newFilename}`, {
         responseType: 'blob'
       });
@@ -558,15 +557,17 @@ const App = () => {
     <Box sx={{ p: 3 }}>
       {!selectedImage && isNew !== true && (
         <>
-          <Typography level="h2">Редактор карты</Typography>
-          <Button onClick={() => setisNew(true)}>Создать</Button>
+           <Typography level="h2">Карты</Typography>
+      <Button sx={{ marginTop: '8px'}} onClick={() => setisNew(true)}>
+        Создать новый этаж
+      </Button>
           <List sx={{ mt: 3 }}>
             {images.map((image) => (
               <ListItem key={image.filename} sx={styles.listItem} onClick={() => handleImageClick(image)}>
                 <Box sx={styles.filenameBox}>
-                  <Typography sx={styles.filenameText}>{image.filename}</Typography>
+                  <Typography sx={styles.filenameText}>{image.campus}/{image.floor}</Typography>
                 </Box>
-                <Typography>Корпус 1, Этаж 1</Typography>
+                <Typography>Корпус {image.campus}, Этаж {image.floor}</Typography>
                 <IconButton
                   aria-label="Delete"
                   size="large"
