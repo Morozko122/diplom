@@ -174,7 +174,7 @@ class Map(Base):
     id = Column(Integer, primary_key=True)
     filename = Column(String, nullable=False)
     floor = Column(Integer, nullable=False)
-    сampus = Column(Integer, nullable=False)
+    campus = Column(Integer, nullable=False)
     
     
     

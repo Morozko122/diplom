@@ -7,7 +7,7 @@ from flask_security import auth_required, permissions_accepted, current_user, ha
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, unset_jwt_cookies, verify_jwt_in_request
 from app.decorator import roles_required 
 from app.database import db_session
-from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker, StudentInDormitory
+from app.models import Application, User, Role, Student, Group, RolesUsers, ApplicationDormitory, DormitoryWorker, StudentInDormitory, Map
 import pyqrcode
 import io
 from PIL import Image
@@ -681,25 +681,46 @@ def upload_file():
     data = request.get_json()
     if 'image' not in data or 'annotations' not in data:
         return jsonify({'error': 'No image or annotations part'}), 400
-
+    
+    image_name = data['imagename']
     image_data = data['image']
+    image_data_base = data['imageBase']
     annotations = data['annotations']
-    print(annotations)
+    floor = data['floor']
+    campus = data['campus']
+    
 
     # Обработка изображения
     image_data = image_data.split(",")[1]  # Удаление префикса data:image/png;base64,
     image_bytes = base64.b64decode(image_data)
     
-    image_filename = 'annotated-image2.png'
+    image_data_base = image_data_base.split(",")[1]  # Удаление префикса data:image/png;base64,
+    image_bytes_base = base64.b64decode(image_data_base)
+    
+    image_filename = f"{image_name}.jpg"
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
     with open(image_path, 'wb') as f:
         f.write(image_bytes)
+        
+    image_filename_base = f"{image_name}_base.jpg"
+    image_path_base = os.path.join(app.config['UPLOAD_FOLDER'], image_filename_base)
+    with open(image_path_base, 'wb') as f:
+        f.write(image_bytes_base)
 
     # Сохранение аннотаций
-    annotations_filename = 'annotated-image2.json'
+    annotations_filename = f"{image_name}.json"
     annotations_path = os.path.join(app.config['UPLOAD_FOLDER'], annotations_filename)
     with open(annotations_path, 'w') as f:
         f.write(json.dumps(annotations))
+
+    new_map = Map(
+        filename = image_name,
+        floor = floor,
+        сampus = campus,
+    )
+    db_session.add(new_map)
+    db_session.commit()
+    
 
     return jsonify({'message': 'File and annotations successfully uploaded'}), 200
 
@@ -709,15 +730,30 @@ def get_images():
     for filename in os.listdir(app.config['UPLOAD_FOLDER']):
         if filename.endswith(('.png', '.jpg', '.jpeg')):
             annotations_filename = f"{os.path.splitext(filename)[0]}.json"
+            filename_parts = os.path.splitext(filename)
+            filename_base = f"{filename_parts[0]}_base{filename_parts[1]}"
             annotations_path = os.path.join(app.config['UPLOAD_FOLDER'], annotations_filename)
             annotations_exist = os.path.exists(annotations_path)
             images.append({
                 'filename': filename,
+                'filenameBase': filename_base,
                 'annotations': annotations_exist
             })
     return jsonify(images)
 
-
+@app.route('/maps', methods=['GET'])
+@roles_required('admin')
+def get_maps():
+    maps = Map.query.all()
+    maps_list = [
+        {
+            'filename': map.filename,
+            'floor': map.floor,
+            'campus': map.campus,
+        }
+        for map in maps
+    ]
+    return jsonify(maps_list)
 
 @app.route('/annotations/<filename>', methods=['GET'])
 def get_annotations(filename):

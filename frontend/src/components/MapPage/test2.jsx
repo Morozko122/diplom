@@ -17,67 +17,68 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../../config';
 
 
-const NewMap =() => {
-    const [imageUrl, setImageUrl] = useState('');
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          console.log(event.target.result);
-          setImageUrl(event.target.result);
-        };
-        reader.readAsDataURL(file);
-      };
-    
-      const handleDragOver = (e) => {
-        e.preventDefault();
-      };
+const NewMap = () => {
+  const [imageUrl, setImageUrl] = useState('');
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      console.log(event.target.result);
+      setImageUrl(event.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    return (
-        <React.Fragment>
-          <Box
-            sx={{
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  return (
+    <React.Fragment>
+      <Box
+        sx={{
+          display: 'flex',
+          mb: 1,
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'start', sm: 'center' },
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography level="h2" component="h1">
+          Новая карта
+        </Typography>
+      </Box>
+      <div>
+        {imageUrl ? (
+          <AnnotatedImage src={imageUrl} />
+        ) : (
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            style={{
+              width: '900px',
+              height: '300px',
               display: 'flex',
-              mb: 1,
-              gap: 1,
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'start', sm: 'center' },
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
+              alignItems: 'center',
+              border: '2px dashed #ccc'
             }}
           >
-            <Typography level="h2" component="h1">
-              Новая карта
-            </Typography>
-          </Box>
-          <div>
-            {imageUrl ? (
-              <AnnotatedImage src={imageUrl} />
-            ) : (
-              <div
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                style={{
-                  width: '900px',
-                  height: '300px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: '2px dashed #ccc'
-                }}
-              >
-                Перенесите изображение сюда
-              </div>
-            )}
+            Перенесите изображение сюда
           </div>
-        </React.Fragment>
-      );
+        )}
+      </div>
+    </React.Fragment>
+  );
 }
 
 const AnnotatedImage = ({ src, initialAnnotations }) => {
-  
+
   const [image] = useImage(src);
+
 
   const [annotations, setAnnotations] = useState(initialAnnotations || []);
   const [text, setText] = useState('');
@@ -87,7 +88,7 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
   const [editIndex, setEditIndex] = useState(null);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [pixelRatio, setPixelRatio] = useState(3); 
+  const [pixelRatio, setPixelRatio] = useState(3);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const stageRef = useRef(null);
 
@@ -201,27 +202,33 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
     stage.width(900); // Восстановление ширины холста
     stage.height(900); // Восстановление высоты холста
 
+    console.log(uri);
+    console.log(image);
     // Отправка данных на сервер
     fetch(`${API_BASE_URL}/upload`, {
       method: 'POST',
       body: JSON.stringify({
+        campus: numberCampus,
+        floor: numberFloor,
+        imagename: uuidv4(),
         image: uri,
+        imageBase: image.src,
         annotations: annotations
       }),
       headers: {
         'Content-Type': 'application/json'
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data.message);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.message);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
-  
+
 
   const handleDeleteAnnotation = (id) => {
     const newAnnotations = annotations.filter((annotation) => annotation.id !== id);
@@ -269,16 +276,16 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
     setText('');
     setDescription('');
   };
-  
+
 
   const handleDragEnd = (e, id) => {
     const newAnnotations = annotations.map((annotation) =>
       annotation.id === id
         ? {
-            ...annotation,
-            x: e.target.x(),
-            y: e.target.y(),
-          }
+          ...annotation,
+          x: e.target.x(),
+          y: e.target.y(),
+        }
         : annotation
     );
     setAnnotations(newAnnotations);
@@ -286,156 +293,156 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
 
   return (
     <>
-        <Box sx={{ display: 'flex', flex: 2, height: '90vh', overflow: 'hidden' }}>
-      <Box sx={{ flex: 3, overflow: 'hidden', padding: '5px', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', marginBottom: '10px' }}>
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginRight: '10px' }}>
-      <label>Данные метки</label>
-      <Input
-        type="text"
-        name="text"
-        value={text}
-        onChange={handleAnnotationChange}
-        placeholder="Название метки"
-        sx={{ marginBottom: '10px' }}
-      />
-      <Input
-        type="text"
-        name="description"
-        value={description}
-        onChange={handleAnnotationChange}
-        placeholder="Описание метки"
-        sx={{ marginBottom: '10px' }}
-      />
-    </Box>
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
-      <label>Данные карты</label>
-      <Input
-        type="text"
-        name="numberCampus"
-        value={numberCampus}
-        onChange={handleAnnotationChange}
-        placeholder="Номер корпуса"
-        sx={{ marginBottom: '10px' }}
-      />
-      <Input
-        type="text"
-        name="numberFloor"
-        value={numberFloor}
-        onChange={handleAnnotationChange}
-        placeholder="Номер этажа"
-        sx={{ marginBottom: '10px' }}
-      />
-    </Box>
-  </Box>
-        <Button onClick={handleSave}>Сохранить</Button>
-        <Stage
-          width={900}
-          height={900}  // Adjust height to prevent overflow
-          scaleX={scale}
-          scaleY={scale}
-          x={position.x}
-          y={position.y}
-          ref={stageRef}
-          onWheel={handleWheel}
-          draggable
-          onClick={handleStageClick}
-          style={{ flex: 1 }} // Ensure it flexes with its parent
-        >
-          <Layer>
-            <Image image={image} x={0} y={0} />
-            {annotations.map((annotation) => (
-              <Group
-                key={annotation.id}
-                x={annotation.x}
-                y={annotation.y}
-                draggable
-                onDragEnd={(e) => handleDragEnd(e, annotation.id)}
-              >
-                <Ellipse
-                  x={0}
-                  y={0}
-                  radiusX={50}
-                  radiusY={25}
-                  stroke="red"
-                  strokeWidth={2}
-                  draggable={false}
-                />
-                <Text
-                  x={-20}
-                  y={-10}
-                  text={annotation.text}
-                  fontSize={20}
-                  fill="black"
-                  draggable={false}
-                />
-              </Group>
-            ))}
-          </Layer>
-        </Stage>
-      </Box>
-      <Box sx={{ width: '200px', padding: '10px', borderLeft: '1px solid black', overflowY: 'auto' }}>
-        <List sx={{ maxWidth: 300 }}>
-          {annotations.map((annotation) => (
-            <ListItem
-              key={annotation.id}
-              endAction={
-                <IconButton aria-label="Delete" size="sm" color="danger" onClick={() => handleDeleteAnnotation(annotation.id)}>
-                  <Delete />
-                </IconButton>
-              }
-            >
-              <ListItemButton onClick={() => handleEditAnnotation(annotation.id)}>
-                <p color="black">{annotation.text}</p>
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-      <Modal open={modalIsOpen} onClose={closeModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" component="h2">
-            Edit Annotation
-          </Typography>
-          <Input
-            label="Title"
-            name="text"
-            value={text}
-            onChange={handleAnnotationChange}
-            fullWidth
-            margin="normal"
-          />
-          <Input
-            label="Description"
-            name="description"
-            value={description}
-            onChange={handleAnnotationChange}
-            fullWidth
-            margin="normal"
-          />
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" onClick={handleAnnotationSave}>
-              Save
-            </Button>
-            <Button variant="outlined" onClick={closeModal}>
-              Cancel
-            </Button>
+      <Box sx={{ display: 'flex', flex: 2, height: '90vh', overflow: 'hidden' }}>
+        <Box sx={{ flex: 3, overflow: 'hidden', padding: '5px', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', marginBottom: '10px' }}>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginRight: '10px' }}>
+              <label>Данные метки</label>
+              <Input
+                type="text"
+                name="text"
+                value={text}
+                onChange={handleAnnotationChange}
+                placeholder="Название метки"
+                sx={{ marginBottom: '10px' }}
+              />
+              <Input
+                type="text"
+                name="description"
+                value={description}
+                onChange={handleAnnotationChange}
+                placeholder="Описание метки"
+                sx={{ marginBottom: '10px' }}
+              />
+            </Box>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
+              <label>Данные карты</label>
+              <Input
+                type="text"
+                name="numberCampus"
+                value={numberCampus}
+                onChange={handleAnnotationChange}
+                placeholder="Номер корпуса"
+                sx={{ marginBottom: '10px' }}
+              />
+              <Input
+                type="text"
+                name="numberFloor"
+                value={numberFloor}
+                onChange={handleAnnotationChange}
+                placeholder="Номер этажа"
+                sx={{ marginBottom: '10px' }}
+              />
+            </Box>
           </Box>
+          <Button onClick={handleSave}>Сохранить</Button>
+          <Stage
+            width={900}
+            height={900}  // Adjust height to prevent overflow
+            scaleX={scale}
+            scaleY={scale}
+            x={position.x}
+            y={position.y}
+            ref={stageRef}
+            onWheel={handleWheel}
+            draggable
+            onClick={handleStageClick}
+            style={{ flex: 1 }} // Ensure it flexes with its parent
+          >
+            <Layer>
+              <Image image={image} x={0} y={0} />
+              {annotations.map((annotation) => (
+                <Group
+                  key={annotation.id}
+                  x={annotation.x}
+                  y={annotation.y}
+                  draggable
+                  onDragEnd={(e) => handleDragEnd(e, annotation.id)}
+                >
+                  <Ellipse
+                    x={0}
+                    y={0}
+                    radiusX={50}
+                    radiusY={25}
+                    stroke="red"
+                    strokeWidth={2}
+                    draggable={false}
+                  />
+                  <Text
+                    x={-20}
+                    y={-10}
+                    text={annotation.text}
+                    fontSize={20}
+                    fill="black"
+                    draggable={false}
+                  />
+                </Group>
+              ))}
+            </Layer>
+          </Stage>
         </Box>
-      </Modal>
-    </Box>
+        <Box sx={{ width: '200px', padding: '10px', borderLeft: '1px solid black', overflowY: 'auto' }}>
+          <List sx={{ maxWidth: 300 }}>
+            {annotations.map((annotation) => (
+              <ListItem
+                key={annotation.id}
+                endAction={
+                  <IconButton aria-label="Delete" size="sm" color="danger" onClick={() => handleDeleteAnnotation(annotation.id)}>
+                    <Delete />
+                  </IconButton>
+                }
+              >
+                <ListItemButton onClick={() => handleEditAnnotation(annotation.id)}>
+                  <p color="black">{annotation.text}</p>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+        <Modal open={modalIsOpen} onClose={closeModal}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 400,
+              bgcolor: 'background.paper',
+              border: '2px solid #000',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Edit Annotation
+            </Typography>
+            <Input
+              label="Title"
+              name="text"
+              value={text}
+              onChange={handleAnnotationChange}
+              fullWidth
+              margin="normal"
+            />
+            <Input
+              label="Description"
+              name="description"
+              value={description}
+              onChange={handleAnnotationChange}
+              fullWidth
+              margin="normal"
+            />
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button variant="contained" onClick={handleAnnotationSave}>
+                Save
+              </Button>
+              <Button variant="outlined" onClick={closeModal}>
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+      </Box>
     </>
   );
 };
@@ -454,7 +461,7 @@ const App = () => {
     fetchImages();
   }, []);
 
-  const fetchImages = async () => { 
+  const fetchImages = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/images`);
       setImages(response.data);
@@ -490,10 +497,16 @@ const App = () => {
   const handleImageClick = async (image) => {
     try {
       const annotationsResponse = await axios.get(`${API_BASE_URL}/annotations/${image.filename}`);
-      const imageResponse = await axios.get(`${API_BASE_URL}/files/${image.filename}`, {
+      // Разделить имя файла и расширение
+      const parts = image.filename.split(".");
+      const name = parts[0];
+      const extension = parts[1];
+
+      const newFilename = `${name}_base.${extension}`;
+      const imageResponse = await axios.get(`${API_BASE_URL}/files/${newFilename}`, {
         responseType: 'blob'
       });
-  
+
       const reader = new FileReader();
       reader.onload = (event) => {
         setSelectedImage({
@@ -501,7 +514,7 @@ const App = () => {
           annotations: annotationsResponse.data
         });
       };
-  
+
       reader.readAsDataURL(imageResponse.data);
     } catch (error) {
       console.error('Error fetching annotations:', error);
@@ -510,38 +523,38 @@ const App = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-        {(!selectedImage && isNew != true) && (
+      {(!selectedImage && isNew != true) && (
         <>
-        <Typography level="h2">Редактор карты</Typography>
-      <Button onClick={() => setisNew(true)}>Создать</Button>
-      <List sx={{ mt: 3 }}>
-        {images.map((image) => (
-          <ListItem key={image.filename}>
-            <ListItemButton onClick={() => handleImageClick(image)}>
-              <Typography>{image.filename}</Typography>
-            </ListItemButton>
-            <IconButton
-              aria-label="Delete"
-              size="sm"
-              color="danger"
-              onClick={() => console.log('Delete functionality not implemented')}
-            >
-              <Delete />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
-      
+          <Typography level="h2">Редактор карты</Typography>
+          <Button onClick={() => setisNew(true)}>Создать</Button>
+          <List sx={{ mt: 3 }}>
+            {images.map((image) => (
+              <ListItem key={image.filename}>
+                <ListItemButton onClick={() => handleImageClick(image)}>
+                  <Typography>{image.filename}</Typography>
+                </ListItemButton>
+                <IconButton
+                  aria-label="Delete"
+                  size="sm"
+                  color="danger"
+                  onClick={() => console.log('Delete functionality not implemented')}
+                >
+                  <Delete />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+
         </>
-        
+
       )}
-      { isNew == true && (
+      {isNew == true && (
         <NewMap></NewMap>
       )
       }
-      
+
       {selectedImage && (
-        
+
         <AnnotatedImage src={selectedImage.src} initialAnnotations={selectedImage.annotations} />
       )}
     </Box>
