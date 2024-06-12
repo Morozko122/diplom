@@ -172,18 +172,10 @@ class ApplicationDormitory(Base):
 class Map(Base):
     __tablename__ = 'map'
     id = Column(Integer, primary_key=True)
-    image = Column(String, nullable=False)
+    filename = Column(String, nullable=False)
     floor = Column(Integer, nullable=False)
     сampus = Column(Integer, nullable=False)
-    tagsMap = relationship('TagsMap', back_populates='map',passive_deletes=True)
     
-class TagsMap(Base):
-    __tablename__ = 'tagsMap'
-    id = Column(Integer, primary_key=True)
-    idMap = Column(Integer, ForeignKey('map.id',ondelete='CASCADE'))
-    numberRoom = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    map = relationship("Map", back_populates="tagsMap")
     
     
      

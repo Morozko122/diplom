@@ -15,6 +15,8 @@ from flask import Flask, request, jsonify, send_file
 from datetime import timedelta
 from werkzeug.utils import secure_filename
 import os
+import json
+import base64
 
 jwt = JWTManager(app)
 
@@ -634,6 +636,30 @@ def get_file(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     else:
         return jsonify({'error': 'File not found'}), 404
+    
+@app.route('/image/<filename>', methods=['GET'])
+def get_file2(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    print(file_path)
+    if os.path.exists(file_path):
+        # Read the file and encode it in base64
+        with open(file_path, 'rb') as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        
+        # Get the file extension to set the correct MIME type
+        ext = os.path.splitext(filename)[1].lower()
+        mime_type = 'image/png'  # default MIME type
+        if ext == '.jpg' or ext == '.jpeg':
+            mime_type = 'image/jpeg'
+        elif ext == '.gif':
+            mime_type = 'image/gif'
+        
+        # Create the data URL
+        data_url = f"data:{mime_type};base64,{encoded_string}"
+        
+        return jsonify({'data': data_url})
+    else:
+        return jsonify({'error': 'File not found'}), 404
 
 # @app.route('/upload', methods=['POST'])
 # def upload_file():
@@ -652,27 +678,30 @@ def get_file(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
+    data = request.get_json()
+    if 'image' not in data or 'annotations' not in data:
+        return jsonify({'error': 'No image or annotations part'}), 400
 
-    file = request.files['file']
-    annotations = request.form.get('annotations')
+    image_data = data['image']
+    annotations = data['annotations']
+    print(annotations)
 
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    # Обработка изображения
+    image_data = image_data.split(",")[1]  # Удаление префикса data:image/png;base64,
+    image_bytes = base64.b64decode(image_data)
+    
+    image_filename = 'annotated-image2.png'
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    with open(image_path, 'wb') as f:
+        f.write(image_bytes)
 
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+    # Сохранение аннотаций
+    annotations_filename = 'annotated-image2.json'
+    annotations_path = os.path.join(app.config['UPLOAD_FOLDER'], annotations_filename)
+    with open(annotations_path, 'w') as f:
+        f.write(json.dumps(annotations))
 
-        if annotations:
-            annotations_filename = f"{os.path.splitext(filename)[0]}.json"
-            annotations_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], annotations_filename)
-            with open(annotations_path, 'w') as f:
-                f.write(annotations)
-        
-        return jsonify({'message': 'File successfully uploaded'}), 200
+    return jsonify({'message': 'File and annotations successfully uploaded'}), 200
 
 @app.route('/images', methods=['GET'])
 def get_images():
@@ -680,7 +709,7 @@ def get_images():
     for filename in os.listdir(app.config['UPLOAD_FOLDER']):
         if filename.endswith(('.png', '.jpg', '.jpeg')):
             annotations_filename = f"{os.path.splitext(filename)[0]}.json"
-            annotations_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], annotations_filename)
+            annotations_path = os.path.join(app.config['UPLOAD_FOLDER'], annotations_filename)
             annotations_exist = os.path.exists(annotations_path)
             images.append({
                 'filename': filename,
@@ -688,20 +717,11 @@ def get_images():
             })
     return jsonify(images)
 
-@app.route('/image/<filename>', methods=['GET'])
-def get_image(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    print(file_path)
-    print(app.config['TEST_FOLDER'])
-    return send_from_directory(app.config['TEST_FOLDER'], file_path)
-    # print(annotations_filename)
-    # if os.path.exists(file_path):
-    #     return send_from_directory(app.config['UPLOAD_FOLDER'], annotations_filename)
-    # else:
-    #     return jsonify({'error': 'File not found'}), 404
 
 
 @app.route('/annotations/<filename>', methods=['GET'])
 def get_annotations(filename):
     annotations_filename = f"{os.path.splitext(filename)[0]}.json"
-    return send_from_directory(app.config['ANNOTATIONS_FOLDER'], annotations_filename)
+    print(annotations_filename)
+    print(app.config['UPLOAD_FOLDER'])
+    return send_from_directory(app.config['UPLOAD_FOLDER'], annotations_filename)

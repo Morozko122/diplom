@@ -9,6 +9,7 @@ import useToken from "./components/useToken/useToken";
 import FileUpload from "./components/MapPage/mapPage";
 import axios from 'axios';
 import { API_BASE_URL } from "../config";
+import App from "./components/MapPage/test2";
 
 const keys = [
   'access_token', 'user_role', 'user_id', 'email', 'full_name'
@@ -82,6 +83,12 @@ function Router() {
             path="map"
             element={
               <FileUpload />
+            }
+          />
+          <Route
+            path="map2"
+            element={
+              <App />
             }
           />
 
