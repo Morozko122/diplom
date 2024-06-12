@@ -19,7 +19,14 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+    
+ANNOTATIONS_FOLDER = os.path.join(os.getcwd(), 'annotations')
+if not os.path.exists(ANNOTATIONS_FOLDER):
+    os.makedirs(ANNOTATIONS_FOLDER)
+TEST_FOLDER = os.path.join(os.getcwd(), 'test')
+if not os.path.exists(TEST_FOLDER):
+    os.makedirs(TEST_FOLDER)
+    
 
 user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
 app.security = Security(app, user_datastore)

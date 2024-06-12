@@ -654,7 +654,7 @@
 
 
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Image, Ellipse, Text, Group } from 'react-konva';
 import useImage from 'use-image';
 import Modal from '@mui/joy/Modal';
@@ -668,18 +668,26 @@ import ListItemButton from '@mui/joy/ListItemButton';
 import IconButton from '@mui/joy/IconButton';
 import Delete from '@mui/icons-material/Delete';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+import { API_BASE_URL } from '../../../config';
 
-const AnnotatedImage = ({ src }) => {
+const AnnotatedImage = ({ src, initialAnnotations }) => {
+  
   const [image] = useImage(src);
-  const [annotations, setAnnotations] = useState([]);
+  console.log(image);
+  const [annotations, setAnnotations] = useState(initialAnnotations || []);
   const [text, setText] = useState('');
   const [description, setDescription] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [modalIsOpen, setModalIsOpen] = useState(false);
   const [pixelRatio, setPixelRatio] = useState(3); // Default to 2 for high quality
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const stageRef = useRef(null);
+
+  useEffect(() => {
+    setAnnotations(initialAnnotations || []);
+  }, [initialAnnotations]);
 
   const handleStageClick = (e) => {
     if (editIndex !== null) {
@@ -753,10 +761,13 @@ const AnnotatedImage = ({ src }) => {
   
     // Координаты аннотаций
     annotations.forEach(annotation => {
-      minX = Math.min(minX, annotation.x - 50);  // 50 - это радиус эллипса
-      minY = Math.min(minY, annotation.y - 25);  // 25 - это радиус эллипса
-      maxX = Math.max(maxX, annotation.x + 50);
-      maxY = Math.max(maxY, annotation.y + 25);
+      const annotationX = annotation.x * oldScale + oldPosition.x;
+      const annotationY = annotation.y * oldScale + oldPosition.y;
+  
+      minX = Math.min(minX, annotationX - 50 * oldScale);  // 50 - это радиус эллипса
+      minY = Math.min(minY, annotationY - 25 * oldScale);  // 25 - это радиус эллипса
+      maxX = Math.max(maxX, annotationX + 50 * oldScale);
+      maxY = Math.max(maxY, annotationY + 25 * oldScale);
     });
   
     // Добавление небольшого отступа
@@ -791,6 +802,16 @@ const AnnotatedImage = ({ src }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  
+    // Сохранение аннотаций в JSON
+    const annotationsBlob = new Blob([JSON.stringify(annotations)], { type: 'application/json' });
+    const annotationsUrl = URL.createObjectURL(annotationsBlob);
+    const jsonLink = document.createElement('a');
+    jsonLink.download = 'annotations.json';
+    jsonLink.href = annotationsUrl;
+    document.body.appendChild(jsonLink);
+    jsonLink.click();
+    document.body.removeChild(jsonLink);
   };
   
 
@@ -834,6 +855,15 @@ const AnnotatedImage = ({ src }) => {
     setEditIndex(null);
     setText('');
     setDescription('');
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImageUrl(event.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDragEnd = (e, id) => {
@@ -980,61 +1010,184 @@ const AnnotatedImage = ({ src }) => {
   );
 };
 
+// const App = () => {
+//   const [imageUrl, setImageUrl] = useState('');
+
+//   const handleDrop = (e) => {
+//     e.preventDefault();
+//     const files = Array.from(e.dataTransfer.files);
+//     const imageFile = files.find(file => file.type.startsWith('image/'));
+//     const jsonFile = files.find(file => file.type === 'application/json');
+
+//     if (imageFile) {
+//       const reader = new FileReader();
+//       reader.onload = (event) => {
+//         setImageUrl(event.target.result);
+//       };
+//       reader.readAsDataURL(imageFile);
+//     }
+
+//     if (jsonFile) {
+//       const reader = new FileReader();
+//       reader.onload = (event) => {
+//         const loadedAnnotations = JSON.parse(event.target.result);
+//         setAnnotations(loadedAnnotations);
+//       };
+//       reader.readAsText(jsonFile);
+//     }
+//   };
+
+//   const handleDragOver = (e) => {
+//     e.preventDefault();
+//   };
+
+//   return (
+//     <React.Fragment>
+//       <Box
+//         sx={{
+//           display: 'flex',
+//           mb: 1,
+//           gap: 1,
+//           flexDirection: { xs: 'column', sm: 'row' },
+//           alignItems: { xs: 'start', sm: 'center' },
+//           flexWrap: 'wrap',
+//           justifyContent: 'space-between',
+//         }}
+//       >
+//         <Typography level="h2" component="h1">
+//           Редактор карты
+//         </Typography>
+//       </Box>
+//       <div>
+//         {imageUrl ? (
+//           <AnnotatedImage src={imageUrl} />
+//         ) : (
+//           <div
+//             onDrop={handleDrop}
+//             onDragOver={handleDragOver}
+//             style={{
+//               width: '100%',
+//               height: '100vh',
+//               display: 'flex',
+//               justifyContent: 'center',
+//               alignItems: 'center',
+//               border: '2px dashed #ccc'
+//             }}
+//           >
+//             Drag & Drop Image Here
+//           </div>
+//         )}
+//       </div>
+//     </React.Fragment>
+//   );
+// };
+
 const App = () => {
-  const [imageUrl, setImageUrl] = useState('');
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [file, setFile] = useState(null);
+  const [annotations, setAnnotations] = useState([]);
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const fetchImages = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/images`);
+      setImages(response.data);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setImageUrl(event.target.result);
-    };
-    reader.readAsDataURL(file);
+    const droppedFile = e.dataTransfer.files[0];
+    setFile(droppedFile);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
+  const handleUpload = async () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('annotations', JSON.stringify(annotations));
+
+    try {
+      await axios.post(`${API_BASE_URL}/upload`, formData);
+      setIsModalOpen(false);
+      fetchImages();
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
+
+  const handleImageClick = async (image) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/annotations/${image.filename}`);
+      setSelectedImage({
+        src: `${API_BASE_URL}/image/${image.filename}`,
+        annotations: response.data
+      });
+    } catch (error) {
+      console.error('Error fetching annotations:', error);
+      setSelectedImage({
+        src: `/image/${image.filename}`,
+        annotations: []
+      });
+    }
+  };
+
   return (
-    <React.Fragment>
-      <Box
-        sx={{
-          display: 'flex',
-          mb: 1,
-          gap: 1,
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'start', sm: 'center' },
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography level="h2" component="h1">
-          Редактор карты
-        </Typography>
-      </Box>
-      <div>
-        {imageUrl ? (
-          <AnnotatedImage src={imageUrl} />
-        ) : (
-          <div
+    <Box sx={{ p: 3 }}>
+      <Typography level="h2">Редактор карты</Typography>
+      <Button onClick={() => setIsModalOpen(true)}>Создать</Button>
+      <List sx={{ mt: 3 }}>
+        {images.map((image) => (
+          <ListItem key={image.filename}>
+            <ListItemButton onClick={() => handleImageClick(image)}>
+              <Typography>{image.filename}</Typography>
+            </ListItemButton>
+            <IconButton
+              aria-label="Delete"
+              size="sm"
+              color="danger"
+              onClick={() => console.log('Delete functionality not implemented')}
+            >
+              <Delete />
+            </IconButton>
+          </ListItem>
+        ))}
+      </List>
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Box sx={{ p: 3 }}>
+          <Typography level="h4">Загрузить файл</Typography>
+          <Box
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            style={{
+            sx={{
               width: '100%',
-              height: '100vh',
+              height: '200px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              border: '2px dashed #ccc'
+              border: '2px dashed #ccc',
+              mt: 2,
             }}
           >
-            Drag & Drop Image Here
-          </div>
-        )}
-      </div>
-    </React.Fragment>
+            Перетащите файл сюда
+          </Box>
+          <Button onClick={handleUpload} sx={{ mt: 2 }}>Загрузить</Button>
+        </Box>
+      </Modal>
+      {selectedImage && (
+        <AnnotatedImage src={selectedImage.src} initialAnnotations={selectedImage.annotations} />
+      )}
+    </Box>
   );
 };
 
