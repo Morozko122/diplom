@@ -136,19 +136,21 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
             '--ListItem-radius': (theme) => theme.vars.radius.sm,
           }}
         >
+          {role !== 'admin' && (
+            <ListItem>
+              <ListItemButton selected>
+                <AssignmentRoundedIcon />
+                <Link to="/">
+                  <ListItemContent>
 
-          <ListItem>
-            <ListItemButton selected>
-              <AssignmentRoundedIcon />
-              <Link to="/">
-              <ListItemContent>
-                
-                  <Typography level="title-sm">Заказы</Typography>
-                
-              </ListItemContent>
-              </Link>
-            </ListItemButton>
-          </ListItem>
+                    <Typography level="title-sm">Заказы</Typography>
+
+                  </ListItemContent>
+                </Link>
+              </ListItemButton>
+            </ListItem>
+          )}
+
           {role === 'admin' && (
             <ListItem nested>
               <Toggler
@@ -172,17 +174,17 @@ export default function Sidebar({ role, removeData, user_email, user_full_name }
                       </ListItemContent>
                     </ListItemButton>
                   </Link>
-                  {/* <Link to="/main/roles">
-                    <ListItemButton>
-                      <ListItemContent>
-                        <Typography level="title-sm">Роли</Typography>
-                      </ListItemContent>
-                    </ListItemButton>
-                  </Link> */}
                   <Link to="/groups">
                     <ListItemButton>
                       <ListItemContent>
                         <Typography level="title-sm">Группы</Typography>
+                      </ListItemContent>
+                    </ListItemButton>
+                  </Link>
+                  <Link to="/map">
+                    <ListItemButton>
+                      <ListItemContent>
+                        <Typography level="title-sm">Карты</Typography>
                       </ListItemContent>
                     </ListItemButton>
                   </Link>

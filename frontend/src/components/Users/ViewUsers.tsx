@@ -145,8 +145,8 @@ export default function UserTable({token}) {
         try {
 
             const response = await axios.get(`${API_BASE_URL}/users`, headers);
-
-            setRow(response.data);
+            const sortedData = response.data.sort((a, b) => a.id - b.id);
+            setRow(sortedData);
         } catch (error) {
             console.error('Error fetching spravki:', error);
             setRow([]);
@@ -425,6 +425,7 @@ export default function UserTable({token}) {
                 >
                     Сохранить
                 </Button>
+                {label === "Редактирование пользователя" && (
                 <Button
                     type="button"
                     variant="solid"
@@ -432,7 +433,7 @@ export default function UserTable({token}) {
                     onClick={handleDelete}
                 >
                     Удалить
-                </Button>
+                </Button>)}
             </Box>
                     </form>
                 </ModalDialog>

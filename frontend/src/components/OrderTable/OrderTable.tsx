@@ -64,7 +64,7 @@ export default function OrderTable({ token, role }) {
   };
 
   const [rows, setRow] = React.useState([]);
-  console.log(role);
+  
   const userId = localStorage.getItem('user_id');
 
   const updateApplication = async (newStatus) => {
@@ -95,7 +95,9 @@ export default function OrderTable({ token, role }) {
       }
       else if (role  == 'hostel-employee') url = `${API_BASE_URL}/workers/${id}/applications`
       const response = await axios.get(url,headers);
-      setRow(response.data);
+      const sortedData = response.data.sort((a, b) => b.id - a.id);
+      setRow(sortedData);
+      
     } catch (error) {
       console.error('Error fetching:', error);
       setRow([]);

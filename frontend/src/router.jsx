@@ -9,7 +9,7 @@ import useToken from "./components/useToken/useToken";
 import FileUpload from "./components/MapPage/mapPage";
 import axios from 'axios';
 import { API_BASE_URL } from "../config";
-import App from "./components/MapPage/test2";
+import Map from "./components/MapPage/test2";
 
 const keys = [
   'access_token', 'user_role', 'user_id', 'email', 'full_name'
@@ -37,69 +37,41 @@ const checkToken = async (token, removeData) => {
 function ProtectedRoute({ token, role, requiredRoles, removeData, children }) {
   checkToken(token, removeData);
   if (!token || token === "" || token === undefined) {
-    return <Navigate to="/login" replace />;
-  }
+    return <Navigate to="/login" replace />;}
   if (requiredRoles && !requiredRoles.includes(role)) {
-    return <Navigate to="/pageNotFound" replace />;
-  }
-  return children;
-}
-
+    return <Navigate to="/pageNotFound" replace />;}
+  return children;}
 function Router() {
   const { data, removeData, setData } = useToken(keys);
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/login"
-          element={!data.access_token ? <SignIn setData={setData} /> : <Navigate to="/" replace />}
-        />
-        <Route
-          path="/"
+        <Route path="/login"
+          element={!data.access_token ? <SignIn setData={setData} /> : <Navigate to="/" replace />}/>
+        <Route path="/"
           element={
             <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData}>
               <JoyOrderDashboardTemplate user_full_name={data.full_name} user_email={data.email} role={data.user_role} removeData={removeData} />
-            </ProtectedRoute>
-          }
-        >
+            </ProtectedRoute>}>
           <Route index element={<OrderTable token={data.access_token} role={data.user_role} />} />
-          <Route
-            path="groups"
+          <Route path="groups"
             element={
               <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData} requiredRoles={['admin']}>
                 <GroupTable token={data.access_token} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="users"
+              </ProtectedRoute>}/>
+          <Route path="users"
             element={
               <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData} requiredRoles={['admin']}>
                 <UserTable token={data.access_token} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="map"
-            element={
-              <FileUpload />
-            }
-          />
-          <Route
-            path="map2"
-            element={
-              <App />
-            }
-          />
-
-        </Route>
-
+              </ProtectedRoute>}/>
+          <Route path="map"
+          element={
+            <ProtectedRoute token={data.access_token} role={data.user_role} removeData={removeData} requiredRoles={['admin']}>
+              <Map />
+            </ProtectedRoute>}/></Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
-    </BrowserRouter>
-  );
-}
-
+    </BrowserRouter>);}
 export default Router
 
 

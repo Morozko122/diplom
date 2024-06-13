@@ -454,7 +454,7 @@ const AnnotatedImage = ({ src, initialAnnotations }) => {
 };
 
 
-const App = () => {
+const Map = () => {
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isNew, setisNew] = useState(false);
@@ -589,4 +589,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Map;
