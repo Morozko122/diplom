@@ -492,7 +492,7 @@ def get_applicationDormitory(id=None):
     return jsonify([app.serialize() for app in applications])
 
 @app.route('/applicationDormitory/<int:id>', methods=['DELETE'])
-@roles_required('admin')
+@roles_required('admin', "student")
 def delete_applicationDormitory(id):
     ApplicationDormitory.query.filter_by(id=id).delete()
     db_session.commit();

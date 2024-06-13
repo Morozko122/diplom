@@ -71,14 +71,17 @@ export default function UserTable({token}) {
     const [openEdit, setOpenEdit] = useState(false);
     const handleOpenEdit = () => setOpenEdit(true);
     const handleCloseEdit = () => setOpenEdit(false);
+    const [label, setlabel] = useState("Добавить нового пользователя");
 
     const handleRowClick = (row) => {
+        setlabel("Редактирование пользователя")
         setSelectedRow(row);
         fetchUserFullInfo(row.id)
         handleOpenEdit()
     };
 
     const handleClose = () => {
+        setlabel("Добавить нового пользователя")
         setFormData({});
         handleCloseEdit()
         setSelectedRow(null);
@@ -278,7 +281,7 @@ export default function UserTable({token}) {
                 >
                     <ModalClose onClick={handleClose} />
                     <Typography id="add-user-modal" level="h6" component="h2">
-                        Добавить нового пользователя
+                        {label}
                     </Typography>
                     <form
                         onSubmit={handleSubmit}
